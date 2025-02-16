@@ -1,0 +1,303 @@
+// Create a new transaction
+async function createTransaction(db, transactionData) {
+  try {
+    // Validate transaction data
+    if (!transactionData.from || !transactionData.to || !transactionData.amount) {
+      throw new Error('Missing required fields');
+    }
+
+    // Get source and destination documents
+    let sourceDoc, destDoc;
+    
+    if (transactionData.source === 'account') {
+      sourceDoc = await db.get(transactionData.from);
+    } else {
+      const sourceResult = await db.find({
+        selector: {
+          _id: transactionData.from,
+          type: transactionData.source
+        }
+      });
+      sourceDoc = sourceResult.docs[0];
+    }
+
+    if (transactionData.destination === 'account') {
+      destDoc = await db.get(transactionData.to);
+    } else {
+      const destResult = await db.find({
+        selector: {
+          _id: transactionData.to,
+          type: transactionData.destination
+        }
+      });
+      destDoc = destResult.docs[0];
+    }
+
+    if (!sourceDoc || !destDoc) {
+      throw new Error('Source or destination not found');
+    }
+
+    // Validate balance for withdrawals
+    if (transactionData.transType === 'withdraw' && sourceDoc.balance < transactionData.amount) {
+      throw new Error('Insufficient balance in source account');
+    }
+
+    if (transactionData.transType === 'deposit' && transactionData.source === 'account' && sourceDoc.balance < transactionData.amount) {
+      throw new Error('Insufficient balance in source account');
+    }
+
+    // Handle currency conversions
+    let sourceAmount = transactionData.amount;
+    let destAmount = transactionData.amount;
+    
+    // If currencies differ, convert amounts
+    if (sourceDoc.currency !== destDoc.currency) {
+      if (sourceDoc.currency === 'USD' && destDoc.currency === 'KES') {
+        // Convert USD to KES
+        // sourceAmount = transactionData.amount * transactionData.rate;
+        destAmount = transactionData.amount * transactionData.rate;
+      } else if (sourceDoc.currency === 'KES' && destDoc.currency === 'USD') {
+        // Convert KES to USD
+        // sourceAmount = transactionData.amount / transactionData.rate;
+        destAmount = transactionData.amount / transactionData.rate;
+      }
+    }
+
+    // Update balances
+    if (transactionData.transType === 'withdraw') {
+      if (transactionData.destination === 'account') {
+        sourceDoc.balance -= sourceAmount;
+        destDoc.balance += destAmount;
+      } else if (transactionData.destination !== 'account') {
+        sourceDoc.balance -= sourceAmount;
+        destDoc.balance -= destAmount;
+      }
+    } else if (transactionData.transType === 'deposit') {
+      if (transactionData.source === 'account') {
+        sourceDoc.balance -= sourceAmount;
+        destDoc.balance += destAmount;
+      } else if (transactionData.source !== 'account') {
+        sourceDoc.balance += sourceAmount;
+        destDoc.balance += destAmount;
+      }
+    }
+
+    // Create transaction record
+    const transaction = {
+      _id: transactionData._id,
+      from: transactionData.from,
+      fromName: transactionData.fromName,
+      to: transactionData.to,
+      toName: transactionData.toName,
+      source: transactionData.source,
+      destination: transactionData.destination,
+      description: transactionData.description,
+      amount: transactionData.amount,
+      currency: transactionData.currency,
+      rate: transactionData.rate,
+      date: transactionData.date,
+      transType: transactionData.transType,
+      projectId: transactionData.projectId,
+      type: "transaction",
+      state: "Active",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    // Update documents in database
+    await db.put(sourceDoc);
+    await db.put(destDoc);
+    await db.put(transaction);
+
+    return {
+      success: true,
+      transaction: { _id: transaction._id, ...transaction }
+    };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}
+  
+// Get all transactions
+async function getAllTransactions(db, projectId) {
+  try {
+    const result = await db.find({
+      selector: { 
+        type: "transaction",
+        state: "Active",
+        projectId: projectId
+      },
+    });
+
+    return { success: true, transactions: result.docs };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}
+
+// Get today's transactions
+async function getTodayTransactions(db) {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    
+    const result = await db.find({
+      selector: { 
+        type: "transaction",
+        state: "Active",
+        createdAt: { $regex: `^${today}` }
+      },
+    });
+
+    if (!result || !result.docs) {
+      return { success: false, error: "No results found" };
+    }
+
+    const transactions = await Promise.all(
+      result.docs
+        .filter(trans => trans && trans.destination === "supplier")
+        .map(async (transaction) => {
+          const fromDoc = await db.get(transaction.from);
+          const toDoc = await db.get(transaction.to);
+          return {
+            ...transaction,
+            fromName: fromDoc.name,
+            toName: toDoc.name
+          };
+        })
+    );
+
+    return { success: true, transactions };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}
+
+// Get a transaction by ID
+async function getTransactionById(db, transactionId) {
+  try {
+    const transaction = await db.get(transactionId);
+    const fromDoc = await db.get(transaction.from);
+    const toDoc = await db.get(transaction.to);
+    
+    return { 
+      success: true, 
+      transaction: {
+        ...transaction,
+        fromName: fromDoc.name,
+        toName: toDoc.name
+      }
+    };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}
+
+// Update an existing transaction
+function updateTransaction(db, transactionData) {
+  const transaction = {
+    _id: transactionData._id,
+    type: "transaction",
+    state: "Active",
+    ...transactionData,
+    updatedAt: new Date().toISOString()
+  };
+  return db
+    .put(transaction)
+    .then((response) => ({
+      success: true,
+      transaction: { _id: response.id, ...transaction },
+    }))
+    .catch((error) => ({ success: false, error: error.message }));
+}
+
+// Delete a transaction
+function archiveTransaction(db, transactionId) {
+  return db
+    .get(transactionId)
+    .then((transaction) => {
+      transaction.state = "Inactive";
+      transaction.updatedAt = new Date().toISOString();
+      return db.put(transaction);
+    })
+    .then(() => ({ success: true }))
+    .catch((error) => ({ success: false, error: error.message }));
+}
+
+// Search transactions
+async function searchTransactions(db, searchTerm, type) {
+  try {
+    const searchResult = await db.find({
+      selector: {
+        $or: [
+          { description: { $regex: new RegExp(searchTerm, 'i') } },
+          { from: { $regex: new RegExp(searchTerm, 'i') } },
+          { to: { $regex: new RegExp(searchTerm, 'i') } }
+        ],
+        state: "Active",
+        type: "transaction"
+      }
+    });
+
+    const transactions = await Promise.all(searchResult.docs.map(async (transaction) => {
+      const fromDoc = await db.get(transaction.from);
+      const toDoc = await db.get(transaction.to);
+      return {
+        ...transaction,
+        fromName: fromDoc.name,
+        toName: toDoc.name
+      };
+    }));
+
+    return { success: true, result: transactions };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}
+
+async function searchCS(db, searchTerm, type) {
+  try {
+    const searchResult = await db.find({
+      selector: {
+        $or: [
+          { name: { $regex: new RegExp(searchTerm, 'i') } }
+        ],
+        state: "Active",
+        type: type
+      }
+    });
+    return { success: true, result: searchResult.docs };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}
+
+async function transSearch(db, searchTerm, projectId) {
+  try {
+    const searchResult = await db.find({
+      selector: {
+        $or: [
+          { description: { $regex: new RegExp(searchTerm, 'i') } },
+          { fromName: { $regex: new RegExp(searchTerm, 'i') } },
+          { toName: { $regex: new RegExp(searchTerm, 'i') } }
+        ],
+        state: "Active",
+        type: type,
+        projectId: projectId
+      }
+    });
+    return { success: true, result: searchResult.docs };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}
+
+module.exports = {
+  createTransaction,
+  getAllTransactions,
+  getTransactionById,
+  updateTransaction,
+  archiveTransaction,
+  searchTransactions,
+  getTodayTransactions,
+  searchCS,
+};
