@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import CreateAccount from './createAccount';
 import { useRouter } from 'next/router';
+import useProjectStore from '@/stores/projectStore';
 
 export default function AccountsTable() {
   const [accounts, setAccounts] = useState([]);
@@ -14,11 +15,19 @@ export default function AccountsTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [searchTerm, setSearchTerm] = useState('');
+  const [projectId, setProjectId] = useState('');
+  const project = useProjectStore(state => state.project);
   const router = useRouter();
 
   useEffect(() => {
+    if (project?._id) {
+      setProjectId(project._id);
+    }
+  }, [project]);
+
+  useEffect(() => {
     fetchAccounts();
-  }, []);
+  }, [projectId]);
 
   useEffect(() => {
     const filtered = accounts.filter(a =>
@@ -31,7 +40,7 @@ export default function AccountsTable() {
 
   const fetchAccounts = async () => {
     try {
-      const result = await window.electronAPI.mainOperation('getAllAccounts');
+      const result = await window.electronAPI.mainOperation('getAllAccounts', projectId);
       if (result.success) {
         setAccounts(result.accounts);
         setFilteredAccounts(result.accounts);
@@ -90,7 +99,6 @@ export default function AccountsTable() {
             <TableHeader>
               <TableRow className="text-base">
                 <TableHead className="text-left">Name</TableHead>
-                <TableHead className="text-left">Account Number</TableHead>
                 <TableHead className="hidden md:table-cell text-left">Balance</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -99,8 +107,7 @@ export default function AccountsTable() {
               {currentAccounts.map((a) => (
                 <TableRow key={a._id} className="text-base">
                   <TableCell className="text-left font-medium">{a.name}</TableCell>
-                  <TableCell className="text-left">{a.accountNumber}</TableCell>
-                  <TableCell className="hidden md:table-cell text-left">KES {a.balance}</TableCell>
+                  <TableCell className="hidden md:table-cell text-left">{a.currency} {a.balance}</TableCell>
                   <TableCell className="text-right">
                     <Button onClick={() => router.push(`/finance/account/${a._id}`)}>View</Button>
                   </TableCell>

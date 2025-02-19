@@ -1,18 +1,17 @@
 const { getAccountById, updateAccount } = require('./accounts');
+const { v4: uuidv4 } = require('uuid');
 
 // Create a new expense
 function createExpense(db, expenseData) {
   const expense = {
-    _id: expenseData._id,
+    _id: uuidv4(),
     description: expenseData.description,
     amount: expenseData.amount,
     date: expenseData.date,
-    storeNo: expenseData.storeNo,
-    account: expenseData.account,
-    expenseType: expenseData.expenseType,
-    expenseTypeId: expenseData.expenseTypeId,
+    accountId: expenseData.accountId,
+    accountName: expenseData.accountName,
+    projectId: expenseData.projectId,
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
     type: "expense",
     state: "Active"
   };
@@ -45,13 +44,15 @@ function createExpense(db, expenseData) {
 }
 
 // Get all expenses
-function getAllExpenses(db) {
+function getAllExpenses(db, projectId) {
   return db
     .find({
       selector: { 
         type: "expense",
-        state: "Active"
+        state: "Active",
+        projectId: projectId
       },
+      limit: 100000
     })
     .then((result) => ({ success: true, expenses: result.docs }))
     .catch((error) => ({ success: false, error: error.message }));

@@ -1,3 +1,5 @@
+const { v4: uuidv4 } = require('uuid');
+
 // Create a new transaction
 async function createTransaction(db, transactionData) {
   try {
@@ -38,13 +40,13 @@ async function createTransaction(db, transactionData) {
     }
 
     // Validate balance for withdrawals
-    if (transactionData.transType === 'withdraw' && sourceDoc.balance < transactionData.amount) {
-      throw new Error('Insufficient balance in source account');
-    }
+    // if (transactionData.transType === 'withdraw' && sourceDoc.balance < transactionData.amount) {
+    //   throw new Error('Insufficient balance in source account');
+    // }
 
-    if (transactionData.transType === 'deposit' && transactionData.source === 'account' && sourceDoc.balance < transactionData.amount) {
-      throw new Error('Insufficient balance in source account');
-    }
+    // if (transactionData.transType === 'deposit' && transactionData.source === 'account' && sourceDoc.balance < transactionData.amount) {
+    //   throw new Error('Insufficient balance in source account');
+    // }
 
     // Handle currency conversions
     let sourceAmount = transactionData.amount;
@@ -84,7 +86,7 @@ async function createTransaction(db, transactionData) {
 
     // Create transaction record
     const transaction = {
-      _id: transactionData._id,
+      _id: uuidv4(),
       from: transactionData.from,
       fromName: transactionData.fromName,
       to: transactionData.to,
@@ -101,7 +103,6 @@ async function createTransaction(db, transactionData) {
       type: "transaction",
       state: "Active",
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
     };
 
     // Update documents in database
@@ -127,46 +128,10 @@ async function getAllTransactions(db, projectId) {
         state: "Active",
         projectId: projectId
       },
+      limit: 100000
     });
 
     return { success: true, transactions: result.docs };
-  } catch (error) {
-    return { success: false, error: error.message };
-  }
-}
-
-// Get today's transactions
-async function getTodayTransactions(db) {
-  try {
-    const today = new Date().toISOString().split('T')[0];
-    
-    const result = await db.find({
-      selector: { 
-        type: "transaction",
-        state: "Active",
-        createdAt: { $regex: `^${today}` }
-      },
-    });
-
-    if (!result || !result.docs) {
-      return { success: false, error: "No results found" };
-    }
-
-    const transactions = await Promise.all(
-      result.docs
-        .filter(trans => trans && trans.destination === "supplier")
-        .map(async (transaction) => {
-          const fromDoc = await db.get(transaction.from);
-          const toDoc = await db.get(transaction.to);
-          return {
-            ...transaction,
-            fromName: fromDoc.name,
-            toName: toDoc.name
-          };
-        })
-    );
-
-    return { success: true, transactions };
   } catch (error) {
     return { success: false, error: error.message };
   }
@@ -223,38 +188,7 @@ function archiveTransaction(db, transactionId) {
     .catch((error) => ({ success: false, error: error.message }));
 }
 
-// Search transactions
-async function searchTransactions(db, searchTerm, type) {
-  try {
-    const searchResult = await db.find({
-      selector: {
-        $or: [
-          { description: { $regex: new RegExp(searchTerm, 'i') } },
-          { from: { $regex: new RegExp(searchTerm, 'i') } },
-          { to: { $regex: new RegExp(searchTerm, 'i') } }
-        ],
-        state: "Active",
-        type: "transaction"
-      }
-    });
-
-    const transactions = await Promise.all(searchResult.docs.map(async (transaction) => {
-      const fromDoc = await db.get(transaction.from);
-      const toDoc = await db.get(transaction.to);
-      return {
-        ...transaction,
-        fromName: fromDoc.name,
-        toName: toDoc.name
-      };
-    }));
-
-    return { success: true, result: transactions };
-  } catch (error) {
-    return { success: false, error: error.message };
-  }
-}
-
-async function searchCS(db, searchTerm, type) {
+async function searchCS(db, searchTerm, type, projectId) {
   try {
     const searchResult = await db.find({
       selector: {
@@ -262,8 +196,10 @@ async function searchCS(db, searchTerm, type) {
           { name: { $regex: new RegExp(searchTerm, 'i') } }
         ],
         state: "Active",
-        type: type
-      }
+        type: type,
+        projectId: projectId
+      },
+      limit: 100000
     });
     return { success: true, result: searchResult.docs };
   } catch (error) {
@@ -281,11 +217,12 @@ async function transSearch(db, searchTerm, projectId) {
           { toName: { $regex: new RegExp(searchTerm, 'i') } }
         ],
         state: "Active",
-        type: type,
+        type: "transaction",
         projectId: projectId
-      }
+      },
+      limit: 100000
     });
-    return { success: true, result: searchResult.docs };
+    return { success: true, transactions: searchResult.docs };
   } catch (error) {
     return { success: false, error: error.message };
   }
@@ -297,7 +234,6 @@ module.exports = {
   getTransactionById,
   updateTransaction,
   archiveTransaction,
-  searchTransactions,
-  getTodayTransactions,
   searchCS,
+  transSearch,
 };

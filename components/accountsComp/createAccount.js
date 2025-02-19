@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from '@/hooks/use-toast';
+import useProjectStore from '@/stores/projectStore';
+import { useRouter } from 'next/router';
 
 export default function CreateAccount({ fetchAccounts }) {
   const [isAddingAccount, setIsAddingAccount] = useState(false);
@@ -15,20 +17,22 @@ export default function CreateAccount({ fetchAccounts }) {
     balance: '',
     currency: 'KES'
   });
+  const [projectId, setProjectId] = useState('');
   const { toast } = useToast();
+  const project = useProjectStore(state => state.project);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (project?._id) {
+      setProjectId(project._id);
+    }
+  }, [project]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewAccount(prev => ({
       ...prev,
       [name]: value
-    }));
-  };
-
-  const handleAccountTypeChange = (value) => {
-    setNewAccount(prev => ({
-      ...prev,
-      accountType: value
     }));
   };
 
@@ -39,7 +43,8 @@ export default function CreateAccount({ fetchAccounts }) {
       const accountData = {
         ...newAccount,
         _id: `${uuidv4()}`,
-        balance: parseInt(newAccount.balance)
+        balance: parseInt(newAccount.balance),
+        projectId: projectId,
       };
       console.log(accountData);
       const result = await window.electronAPI.mainOperation('createAccount', accountData);
@@ -92,19 +97,6 @@ export default function CreateAccount({ fetchAccounts }) {
                 id="name"
                 name="name"
                 value={newAccount.name}
-                onChange={handleInputChange}
-                className="col-span-3"
-                required
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="accountNumber" className="text-right">
-                Account Number
-              </Label>
-              <Input
-                id="accountNumber"
-                name="accountNumber"
-                value={newAccount.accountNumber}
                 onChange={handleInputChange}
                 className="col-span-3"
                 required

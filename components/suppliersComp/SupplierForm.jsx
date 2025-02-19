@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
+import useProjectStore from "@/stores/projectStore"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
@@ -11,13 +12,18 @@ import { Separator } from "@/components/ui/separator"
 export function SupplierForm({ supplier, onSubmit, mode = "create" }) {
   const [formData, setFormData] = useState({
     name: "",
-    email: "",
-    phoneNumber: "",
-    address: "",
-    supplierType: "",
     balance: 0,
+    projectId: "",
     ...supplier,
   })
+  const [projectId, setProjectId] = useState("")
+  const project = useProjectStore((state) => state.project)
+
+  useEffect(() => {
+    if (project?._id) {
+      setProjectId(project._id)
+    }
+  }, [project])
 
   useEffect(() => {
     if (supplier) {
@@ -38,15 +44,9 @@ export function SupplierForm({ supplier, onSubmit, mode = "create" }) {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    onSubmit(formData)
+    console.log({ ...formData, projectId })
+    onSubmit({ ...formData, projectId })
   }
-
-  const supplierTypes = [
-    "Contractor",
-    "Manufacturer",
-    "Distributor",
-    "Service Provider"
-  ]
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -64,41 +64,6 @@ export function SupplierForm({ supplier, onSubmit, mode = "create" }) {
               onChange={handleChange}
               placeholder="Enter supplier's full name"
               required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Enter supplier's email"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="phoneNumber">Phone Number</Label>
-            <Input
-              id="phoneNumber"
-              name="phoneNumber"
-              value={formData.phoneNumber}
-              onChange={handleChange}
-              placeholder="Enter supplier's phone number"
-              type="tel"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="address">Address</Label>
-            <Input
-              id="address"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              placeholder="Enter supplier's address"
             />
           </div>
         </CardContent>

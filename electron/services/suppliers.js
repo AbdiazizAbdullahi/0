@@ -4,7 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 async function createSupplier(db, supplierData) {
   try {
     const supplier = {
-      _id: supplierData._id || uuidv4(),
+      _id: uuidv4(),
       type: 'supplier',
       state: 'Active',
       createdAt: new Date().toISOString(),
@@ -26,12 +26,13 @@ async function createSupplier(db, supplierData) {
 }
 
 // Retrieve all active suppliers from the database
-async function getAllSuppliers(db) {
+async function getAllSuppliers(db, projectId) {
   try {
     const result = await db.find({
       selector: { 
         type: 'supplier',
-        state: 'Active' 
+        state: 'Active',
+        projectId: projectId
       },
       limit: 100000
     });
@@ -151,11 +152,101 @@ async function getSupplierById(db, supplierId) {
   }
 }
 
+async function getSupplierDetails(db, supplierId) {
+  try {
+    // Fetch supplier info
+    const supplier = await db.get(supplierId);
+    if (supplier.type !== 'supplier' || supplier.state === 'Inactive') {
+      throw new Error('Supplier not found or is inactive');
+    }
+
+    // Fetch invoices
+    const invoicesResult = await db.find({
+      selector: {
+        type: 'invoice',
+        state: 'Active',
+        supplierId: supplierId
+      }
+    });
+
+    // Fetch transactions
+    const transactionsResult = await db.find({
+      selector: {
+        type: 'transaction',
+        state: 'Active',
+        $or: [
+          { from: supplierId },
+          { to: supplierId }
+        ]
+      }
+    });
+
+    // Prepare ledger entries
+    let ledgerEntries = [
+      // Convert invoices to ledger entries
+      ...invoicesResult.docs.map(invoice => ({
+        date: invoice.date,
+        description: `Invoice: ${invoice.description}`,
+        debit: invoice.amount,
+        credit: 0,
+        type: 'invoice',
+        id: invoice._id
+      })),
+      // Convert transactions to ledger entries
+      ...transactionsResult.docs.map(trans => ({
+        date: trans.date,
+        description: trans.description,
+        debit: trans.from === supplierId ? trans.amount : 0,
+        credit: trans.to === supplierId ? trans.amount : 0,
+        type: 'transaction',
+        id: trans._id
+      }))
+    ];
+
+    // Sort by date
+    ledgerEntries.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    // Calculate running balance and metrics
+    let balance = 0;
+    let totalDebit = 0;
+    let totalCredit = 0;
+
+    const ledgerWithBalance = ledgerEntries.map(entry => {
+      totalDebit += entry.debit;
+      totalCredit += entry.credit;
+      balance = balance + entry.debit - entry.credit;
+      return {
+        ...entry,
+        balance
+      };
+    });
+
+    return {
+      success: true,
+      data: {
+        info: supplier,
+        metrics: {
+          totalDebit,
+          totalCredit,
+          difference: totalDebit - totalCredit
+        },
+        ledger: ledgerWithBalance
+      }
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}
+
 module.exports = {
   createSupplier,
   getAllSuppliers,
   updateSupplier,
   archiveSupplier,
   searchSuppliers,
-  getSupplierById
+  getSupplierById,
+  getSupplierDetails
 };

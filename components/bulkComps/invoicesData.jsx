@@ -5,23 +5,29 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { parseFile, validateData } from '@/lib/bulkImportUtils';
 import { toast } from 'sonner';
+import useProjectStore from '@/stores/projectStore';
 
 export default function InvoicesData() {
   const [parsedData, setParsedData] = useState([]);
   const [validatedData, setValidatedData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [projects, setProjects] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
-  const [selectedProject, setSelectedProject] = useState('');
   const [selectedSupplier, setSelectedSupplier] = useState('');
+  const [selectedSupplierName, setSelectedSupplierName] = useState('');
+  const [projectId, setProjectId] = useState('');
+  const project = useProjectStore(state => state.project);
+
+  useEffect(() => {
+    if (project?._id) {
+      setProjectId(project._id);
+    }
+  }, [project]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const projectsResult = await window.electronAPI.mainOperation('getAllProjects');
-        const suppliersResult = await window.electronAPI.mainOperation('getAllSuppliers');
+        const suppliersResult = await window.electronAPI.mainOperation('getAllSuppliers', projectId);
         
-        if (projectsResult.success) setProjects(projectsResult.projects);
         if (suppliersResult.success) setSuppliers(suppliersResult.suppliers);
       } catch (error) {
         toast.error('Failed to fetch projects and suppliers');
@@ -29,7 +35,7 @@ export default function InvoicesData() {
     };
     
     fetchData();
-  }, []);
+  }, [projectId]);
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
@@ -51,8 +57,8 @@ export default function InvoicesData() {
   };
 
   const handleSubmit = async () => {
-    if (!selectedProject || !selectedSupplier) {
-      toast.error('Please select both project and supplier');
+    if (!selectedSupplier) {
+      toast.error('Please select a supplier');
       return;
     }
 
@@ -61,8 +67,9 @@ export default function InvoicesData() {
       .filter(entry => entry.isValid)
       .map(entry => ({
         ...entry,
-        projectId: selectedProject,
-        supplierId: selectedSupplier
+        supplierId: selectedSupplier,
+        supplierName: selectedSupplierName,
+        projectId: projectId
       }));
     
     if (validEntries.length === 0) {
@@ -79,7 +86,6 @@ export default function InvoicesData() {
       // Reset state
       setParsedData([]);
       setValidatedData([]);
-      setSelectedProject('');
       setSelectedSupplier('');
     } catch (error) {
       toast.error('Failed to submit invoices');
@@ -89,7 +95,6 @@ export default function InvoicesData() {
   const clearData = () => {
     setParsedData([]);
     setValidatedData([]);
-    setSelectedProject('');
     setSelectedSupplier('');
   };
 
@@ -97,20 +102,14 @@ export default function InvoicesData() {
     <div className="space-y-4">
       <div className="flex flex-col space-y-4">
         <div className="flex gap-4">
-          <Select value={selectedProject} onValueChange={setSelectedProject}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Select Project" />
-            </SelectTrigger>
-            <SelectContent>
-              {projects.map(project => (
-                <SelectItem key={project._id} value={project._id}>
-                  {project.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          <Select value={selectedSupplier} onValueChange={setSelectedSupplier}>
+          <Select 
+            value={selectedSupplier} 
+            onValueChange={(value) => {
+              setSelectedSupplier(value);
+              const supplier = suppliers.find(s => s._id === value);
+              setSelectedSupplierName(supplier ? supplier.name : '');
+            }}
+          >
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Select Supplier" />
             </SelectTrigger>
@@ -147,9 +146,9 @@ export default function InvoicesData() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Client ID</TableHead>
-                <TableHead>Amount</TableHead>
                 <TableHead>Date</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead>Amount</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
@@ -159,9 +158,9 @@ export default function InvoicesData() {
                   key={index} 
                   className={entry.isValid ? '' : 'bg-red-50'}
                 >
-                  <TableCell>{entry.client_id}</TableCell>
-                  <TableCell>{entry.amount}</TableCell>
                   <TableCell>{entry.date}</TableCell>
+                  <TableCell>{entry.description}</TableCell>
+                  <TableCell>{entry.amount}</TableCell>
                   <TableCell>
                     {entry.isValid ? (
                       <span className="text-green-600">Valid</span>

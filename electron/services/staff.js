@@ -26,12 +26,13 @@ async function createStaff(db, staffData) {
 }
 
 // Retrieve all active staff members from the database
-async function getAllStaff(db) {
+async function getAllStaff(db, projectId) {
   try {
     const result = await db.find({
       selector: { 
         type: 'staff',
-        state: 'Active' 
+        state: 'Active',
+        projectId: projectId
       }
     });
 
@@ -96,7 +97,7 @@ async function archiveStaff(db, staffId) {
 }
 
 // Search staff using flexible matching criteria
-async function searchStaff(db, searchTerm, state = 'Active') {
+async function searchStaff(db, searchTerm, projectId, state = 'Active') {
   try {
     const result = await db.find({
       selector: {
@@ -106,7 +107,8 @@ async function searchStaff(db, searchTerm, state = 'Active') {
           { department: { $regex: new RegExp(searchTerm, 'i') } }
         ],
         state: state,
-        type: 'staff'
+        type: 'staff',
+        projectId: projectId
       }
     });
 

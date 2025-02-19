@@ -26,12 +26,13 @@ async function createAgent(db, agentData) {
 }
 
 // Retrieve all active agents from the database
-async function getAllAgents(db) {
+async function getAllAgents(db, projectId) {
   try {
     const result = await db.find({
       selector: { 
         type: 'agent',
-        state: 'Active' 
+        state: 'Active',
+        projectId: projectId
       }
     });
 
@@ -96,7 +97,7 @@ async function archiveAgent(db, agentId) {
 }
 
 // Search agents using flexible matching criteria
-async function searchAgents(db, searchTerm, state = 'Active') {
+async function searchAgents(db, searchTerm, projectId, state = 'Active') {
   try {
     const result = await db.find({
       selector: {
@@ -106,7 +107,8 @@ async function searchAgents(db, searchTerm, state = 'Active') {
           { email: { $regex: new RegExp(searchTerm, 'i') } }
         ],
         state: state,
-        type: 'agent'
+        type: 'agent',
+        projectId: projectId
       }
     });
 

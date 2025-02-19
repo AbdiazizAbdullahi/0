@@ -1,8 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
@@ -32,7 +31,7 @@ const ReusableTable = ({ headers, data }) => {
               <TableRow key={rowIndex}>
                 {headers.map((header, cellIndex) => (
                   <TableCell key={cellIndex}>
-                    {header.format ? header.format(row[header.field]) : row[header.field]}
+                    {header.format ? header.format(row[header.field], row) : row[header.field]}
                   </TableCell>
                 ))}
               </TableRow>

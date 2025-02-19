@@ -9,14 +9,13 @@ function createInvoice(db, invoiceData) {
     date: new Date(invoiceData.date).toISOString(),
     projectId: invoiceData.projectId,
     supplierId: invoiceData.supplierId,
-    invoiceNumber: invoiceData.invoiceNumber,
-    quantity: invoiceData.quantity,
-    price: invoiceData.price,
+    supplierName: invoiceData.supplierName,
+    invoiceNumber: invoiceData.invoiceNumber || '',
+    quantity: invoiceData.quantity || '',
+    price: invoiceData.price || '',
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
     type: "invoice",
     state: "Active",
-    status: invoiceData.status || "Pending"
   };
   
   return db
@@ -38,12 +37,13 @@ function createInvoice(db, invoiceData) {
 }
 
 // Get all invoices
-function getAllInvoices(db) {
+function getAllInvoices(db, projectId) {
   return db
     .find({
       selector: { 
         type: "invoice",
-        state: "Active"
+        state: "Active",
+        projectId: projectId
       },
       limit: 100000
     })
@@ -91,10 +91,32 @@ function archiveInvoice(db, invoiceId) {
     .catch((error) => ({ success: false, error: error.message }));
 }
 
+async function invoiceSearch(db, searchTerm, projectId) {
+  try {
+    const searchResult = await db.find({
+      selector: {
+        $or: [
+          { description: { $regex: new RegExp(searchTerm, 'i') } },
+          { supplierName: { $regex: new RegExp(searchTerm, 'i') } },
+          { invoiceNumber: { $regex: new RegExp(searchTerm, 'i') } }
+        ],
+        state: "Active",
+        type: "invoice",
+        projectId: projectId
+      },
+      limit: 100000
+    });
+    return { success: true, invoices: searchResult.docs };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}
+
 module.exports = {
   createInvoice,
   getAllInvoices,
   getInvoiceById,
   updateInvoice,
   archiveInvoice,
+  invoiceSearch,
 };

@@ -16,6 +16,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import useProjectStore from '@/stores/projectStore'
+import { useRouter } from 'next/router'
 
 export default function SupplierList() {
   const [suppliers, setSuppliers] = useState([])
@@ -26,14 +28,24 @@ export default function SupplierList() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [archiveSupplierId, setArchiveSupplierId] = useState(null)
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false)
+  const [projectId, setProjectId] = useState('')
+  const project = useProjectStore((state) => state.project)
+  const router = useRouter()
+
+  useEffect(() => {
+    if (project?._id) {
+      setProjectId(project._id)
+    }
+  }, [project])
 
   useEffect(() => {
     fetchSuppliers()
-  }, [])
+  }, [projectId])
 
   const fetchSuppliers = async () => {
     try {
-      const response = await window.electronAPI.mainOperation('getAllSuppliers')
+      const response = await window.electronAPI.mainOperation('getAllSuppliers', projectId)
+      console.log('response', response)
       if (response.success) {
         setSuppliers(response.suppliers)
       }
@@ -123,7 +135,7 @@ export default function SupplierList() {
                   <Button 
                     variant="secondary" 
                     size="sm"
-                    onClick={() => handleViewSupplier(supplier)}
+                    onClick={() => router.push(`/suppliers/${supplier._id}`)}
                   >
                     View
                   </Button>

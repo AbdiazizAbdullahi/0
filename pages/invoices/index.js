@@ -1,65 +1,156 @@
-"use client"
-
-import { useState } from 'react'
-import { Button } from "@/components/ui/button"
-import InvoiceList from "@/components/invoicesComp/InvoiceList"
-import InvoiceForm from "@/components/invoicesComp/InvoiceForm"
-import { 
-  Sheet, 
-  SheetContent, 
-  SheetHeader, 
-  SheetTitle 
-} from "@/components/ui/sheet"
-import Link from 'next/link'
+import React, { useEffect, useState } from 'react'
+import useProjectStore from '@/stores/projectStore'
+import ReusableTable from '@/components/commonComp/reusableTable'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { EllipsisVertical, Loader2 } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Button } from '@/components/ui/button'
 
 export default function Invoices() {
-  const [isAddingInvoice, setIsAddingInvoice] = useState(false)
-  const [refreshTrigger, setRefreshTrigger] = useState(0)
+  const [invoices, setInvoices] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [id, setId] = useState(null)
+  const project = useProjectStore(state => state.project)
 
-  const handleCreateInvoice = async (invoiceData) => {
+  useEffect(() => {
+    if (project?._id) {
+      setId(project._id)
+    }
+  }, [project?._id])
+
+  useEffect(() => {
+    if (id) {
+      fetchInvoices()
+    }
+  }, [id])
+
+  const headers = [
+    { 
+      label: "Date", 
+      field: "date",
+      format: (value) => new Date(value).toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      })
+    },
+    { label: "Invoice Number", field: "invoiceNumber" },
+    { label: "Supplier", field: "supplierName" },
+    { 
+      label: "Amount", 
+      field: "amount",
+      format: (value) => value.toLocaleString(undefined, { minimumFractionDigits: 0 })
+    },
+    { label: "Status", field: "status" },
+    { 
+      label: "Action",
+      field: "action",
+      format: (row) => (
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
+              <EllipsisVertical className="h-4 w-4" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-40">
+            <div className="flex flex-col gap-2">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="w-full justify-start"
+                onClick={() => handleEdit(row)}
+              >
+                Edit
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="w-full justify-start text-destructive hover:text-destructive"
+                onClick={() => handleDelete(row)}
+              >
+                Delete
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
+      )
+    },
+  ]
+
+  const fetchInvoices = async () => {
+    setLoading(true)
+    setError(null)
     try {
-      const response = await window.electronAPI.mainOperation('createInvoice', invoiceData)
-      
+      const response = await window.electronAPI.mainOperation('getAllInvoices', id)
       if (response.success) {
-        setIsAddingInvoice(false)
-        setRefreshTrigger(prev => prev + 1)
+        setInvoices(response.invoices)
       } else {
-        console.error('Invoice creation failed:', response.error)
+        setError(response.error || 'Failed to fetch invoices')
+        setInvoices([])
       }
     } catch (error) {
-      console.error('Error creating invoice:', error)
+      setError(error.message || 'Error fetching invoices')
+      setInvoices([])
+    } finally {
+      setLoading(false)
     }
   }
 
+  const performSearch = async (searchTerm) => {
+    if (!searchTerm) return;
+    try {
+      const searchResult = await window.electronAPI.invoiceSearch(searchTerm, id);
+      if (searchResult.success) {
+        setInvoices(searchResult.invoices);
+      }
+    } catch (error) {
+      console.error('Error during search:', error);
+    }
+  };
+
+  const handleEdit = (invoice) => {
+    // Implement edit logic
+    console.log('Edit invoice:', invoice)
+  }
+
+  const handleDelete = (invoice) => {
+    // Implement delete logic
+    console.log('Delete invoice:', invoice)
+  }
+
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
+    <Card className="">
+      <CardHeader className="flex flex-row justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold">Invoices</h1>
-          <p className="text-muted-foreground">Manage your invoices.</p>
+          <CardTitle>Invoices</CardTitle>
+          <CardDescription>View all invoices for this project</CardDescription>
         </div>
-        <div className="flex space-x-2">
-          <Button onClick={() => setIsAddingInvoice(!isAddingInvoice)}>
-            {isAddingInvoice ? 'Cancel' : 'Add Invoice'}
-          </Button>
+        <div>
+          <Input
+            type="text"
+            placeholder="Search invoices"
+            className=""
+            onChange={(e) => performSearch(e.target.value)}
+          />
         </div>
-      </div>
-
-      <Sheet open={isAddingInvoice} onOpenChange={setIsAddingInvoice}>
-        <SheetContent side="right" className="w-[400px] sm:w-[540px]">
-          <SheetHeader>
-            <SheetTitle></SheetTitle>
-          </SheetHeader>
-          <div className="mt-4">
-            <InvoiceForm 
-              onSubmit={handleCreateInvoice}
-              mode="create"
-            />
+      </CardHeader>
+      <CardContent className="p-2">
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        {loading ? (
+          <div className="flex justify-center items-center p-4">
+            <Loader2 className="h-6 w-6 animate-spin" />
           </div>
-        </SheetContent>
-      </Sheet>
-
-      <InvoiceList key={refreshTrigger} />
-    </div>
+        ) : (
+          <ReusableTable headers={headers} data={invoices} />
+        )}
+      </CardContent>
+    </Card>
   )
 }

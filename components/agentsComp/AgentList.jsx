@@ -15,6 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import useProjectStore from '@/stores/projectStore'
 
 export default function AgentList() {
   const [agents, setAgents] = useState([])
@@ -25,14 +26,22 @@ export default function AgentList() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [archiveAgentId, setArchiveAgentId] = useState(null)
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false)
+  const [projectId, setProjectId] = useState('')
+  const project = useProjectStore((state) => state.project)
+
+  useEffect(() => {
+    if (project?._id) {
+      setProjectId(project._id)
+    }
+  }, [project])
 
   useEffect(() => {
     fetchAgents()
-  }, [])
+  }, [projectId])
 
   const fetchAgents = async () => {
     try {
-      const response = await window.electronAPI.mainOperation('getAllAgents')
+      const response = await window.electronAPI.mainOperation('getAllAgents', projectId)
       if (response.success) {
         setAgents(response.agents)
       }

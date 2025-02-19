@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from 'react'
+import useProjectStore from '@/stores/projectStore'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { 
@@ -30,12 +31,14 @@ export default function SalesForm({ sale, onClose, onUpdate }) {
     clientId: '',
     projectId: '',
     agentId: '',
-    commission: 0
+    commission: 0,
+    projectId: ''
   })
 
   const [clients, setClients] = useState([])
   const [projects, setProjects] = useState([])
   const [agents, setAgents] = useState([])
+  const project = useProjectStore(state => state.project)
 
   useEffect(() => {
     // Fetch clients, projects, and agents
@@ -93,7 +96,8 @@ export default function SalesForm({ sale, onClose, onUpdate }) {
       const saleData = {
         ...formData,
         price: parseFloat(formData.price),
-        date: new Date(formData.date).toISOString()
+        date: new Date(formData.date).toISOString(),
+        projectId: project._id
       }
 
       let response

@@ -15,6 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import useProjectStore from '@/stores/projectStore'
 
 export default function ClientList() {
   const [clients, setClients] = useState([])
@@ -25,14 +26,22 @@ export default function ClientList() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [archiveClientId, setArchiveClientId] = useState(null)
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false)
+  const [projectId, setProjectId] = useState('')
+  const project = useProjectStore(state => state.project)
+
+  useEffect(() => {
+    if (project?._id) {
+      setProjectId(project._id)
+    }
+  }, [project])
 
   useEffect(() => {
     fetchClients()
-  }, [])
+  }, [projectId])
 
   const fetchClients = async () => {
     try {
-      const response = await window.electronAPI.mainOperation('getAllClients')
+      const response = await window.electronAPI.mainOperation('getAllClients', projectId)
       if (response.success) {
         setClients(response.clients)
       }
@@ -107,7 +116,6 @@ export default function ClientList() {
           <thead>
             <tr className="border-b">
               <th className="text-left p-4">Name</th>
-              <th className="text-left p-4">Phone Number</th>
               <th className="text-left p-4">Balance</th>
               <th className="text-left p-4">Actions</th>
             </tr>
@@ -116,7 +124,6 @@ export default function ClientList() {
             {paginatedClients.map((client) => (
               <tr key={client._id} className="border-b">
                 <td className="p-4">{client.name}</td>
-                <td className="p-4">{client.phoneNumber}</td>
                 <td className="p-4">{client.balance}</td>
                 <td className="p-4 flex gap-2">
                   <Button 

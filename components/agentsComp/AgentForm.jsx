@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { DialogFooter } from "@/components/ui/dialog"
+import useProjectStore from '@/stores/projectStore'
 
 export default function AgentForm({ onSubmit, initialData = null }) {
   const [formData, setFormData] = useState({
@@ -13,6 +14,14 @@ export default function AgentForm({ onSubmit, initialData = null }) {
     email: initialData?.email || '',
     address: initialData?.address || '',
   })
+  const [projectId, setProjectId] = useState('')
+  const project = useProjectStore((state) => state.project)
+
+  useEffect(() => {
+    if (project?._id) {
+      setProjectId(project._id)
+    }
+  }, [project])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -27,6 +36,7 @@ export default function AgentForm({ onSubmit, initialData = null }) {
     try {
       const payload = {
         ...formData,
+        projectId,
         ...(initialData && { _id: initialData._id })
       }
       await onSubmit(payload)

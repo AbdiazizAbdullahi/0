@@ -5,6 +5,7 @@ function createAccount(db, accountData) {
     name: accountData.name,
     balance: accountData.balance,
     currency: accountData.currency || 'KES',
+    projectId: accountData.projectId,
     createdAt: new Date().toISOString(),
     type: "account",
     state: "Active"
@@ -19,12 +20,13 @@ function createAccount(db, accountData) {
 }
 
 // Get all accounts
-function getAllAccounts(db) {
+function getAllAccounts(db, projectId) {
   return db
     .find({
       selector: { 
         type: "account",
-        state: "Active"
+        state: "Active",
+        projectId: projectId
       },
     })
     .then((result) => ({ success: true, accounts: result.docs }))

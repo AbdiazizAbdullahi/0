@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import useProjectStore from "@/stores/projectStore"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
@@ -11,10 +12,18 @@ import { Separator } from "@/components/ui/separator"
 export function ClientForm({ client, onSubmit, mode = "create" }) {
   const [formData, setFormData] = useState({
     name: "",
-    phoneNumber: "",
     balance: 0,
+    projectId: '',
     ...client,
   })
+  const [projectId, setProjectId] = useState("")
+  const project = useProjectStore((state) => state.project)
+
+  useEffect(() => {
+    if (project?._id) {
+      setProjectId(project._id)
+    }
+  }, [project])
 
   useEffect(() => {
     if (client) {
@@ -35,7 +44,7 @@ export function ClientForm({ client, onSubmit, mode = "create" }) {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    onSubmit(formData)
+    onSubmit({ ...formData, projectId })
   }
 
   return (
@@ -54,30 +63,6 @@ export function ClientForm({ client, onSubmit, mode = "create" }) {
               onChange={handleChange}
               placeholder="Enter client's full name"
               required
-            />
-          </div>
-{/* 
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Enter client's email"
-            />
-          </div> */}
-
-          <div className="space-y-2">
-            <Label htmlFor="phoneNumber">Phone Number</Label>
-            <Input
-              id="phoneNumber"
-              name="phoneNumber"
-              value={formData.phoneNumber}
-              onChange={handleChange}
-              placeholder="Enter client's phone number"
-              type="tel"
             />
           </div>
         </CardContent>

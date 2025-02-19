@@ -15,7 +15,7 @@ export default function SpecificProject() {
       </div>
       <div className="flex space-x-4">
         <MetricCard link='/invoices' title='Invoices' subtitle='The total amount of invoices' amount={185645200} />
-        <MetricCard link='transaction' title='Transactions' subtitle='The total amount transacted' amount={240186300} />
+        <MetricCard link='/transactions' title='Transactions' subtitle='The total amount transacted' amount={240186300} />
         <MetricCard />
       </div>
     </div>

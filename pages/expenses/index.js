@@ -3,14 +3,11 @@ import useProjectStore from '@/stores/projectStore'
 import ReusableTable from '@/components/commonComp/reusableTable'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { EllipsisVertical, Loader2, SquareChartGantt } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
 
-export default function Transactions() {
-  const [transactions, setTransactions] = useState([])
+export default function Expenses() {
+  const [expenses, setExpenses] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [id, setId] = useState(null)
@@ -24,7 +21,7 @@ export default function Transactions() {
 
   useEffect(() => {
     if (id) {
-      fetchTransactions()
+      fetchExpenses()
     }
   }, [id])
 
@@ -44,37 +41,25 @@ export default function Transactions() {
       field: "amount",
       format: (value) => value.toLocaleString(undefined, { minimumFractionDigits: 0 })
     },
-    { label: "Currency", field: "currency" },
-    { label: "From", field: "fromName"},
-    { label: "To", field: "toName"},
-    { label: "Type", field: "transType" },
-    { 
-      label: "Action",
-      field: "action",
-      format: (_, row) => (
-        <Button variant="ghost" size="icon" asChild>
-          <Link href={`transactions/${row._id}`}>
-            <SquareChartGantt className="h-4 w-4" />
-          </Link>
-        </Button>
-      )
-    },
+    { label: "Account", field: "accountName"},
   ]
 
-  const fetchTransactions = async () => {
+  const fetchExpenses = async () => {
+    console.log(id)
     setLoading(true)
     setError(null)
     try {
-      const response = await window.electronAPI.mainOperation('getAllTransactions', id)
+      const response = await window.electronAPI.mainOperation('getAllExpenses', id)
+      console.log(response)
       if (response.success) {
-        setTransactions(response.transactions)
+        setExpenses(response.expenses)
       } else {
-        setError(response.error || 'Failed to fetch transactions')
-        setTransactions([])
+        setError(response.error || 'Failed to fetch expenses')
+        setExpenses([])
       }
     } catch (error) {
-      setError(error.message || 'Error fetching transactions')
-      setTransactions([])
+      setError(error.message || 'Error fetching expenses')
+      setExpenses([])
     } finally {
       setLoading(false)
     }
@@ -83,38 +68,27 @@ export default function Transactions() {
   const performSearch = async (searchTerm) => {
     if (!searchTerm) return;
     try {
-      const searchResult = await window.electronAPI.transSearch(searchTerm, id);
-      console.log('searchResult:', searchResult);
+      const searchResult = await window.electronAPI.expenseSearch(searchTerm, id)
+      console.log('searchResult:', searchResult)
       if (searchResult.success) {
-        setTransactions(searchResult.transactions);
+        setExpenses(searchResult.expenses)
       }
     } catch (error) {
-      console.error('Error during search:', error);
+      console.error('Error during search:', error)
     }
   };
-
-  const handleEdit = (transaction) => {
-    // Implement edit logic
-    console.log('Edit transaction:', transaction)
-  }
-
-  const handleDelete = (transaction) => {
-    // Implement delete logic
-    console.log('Delete transaction:', transaction)
-  }
 
   return (
     <Card className="">
       <CardHeader className="flex flex-row justify-between items-center">
         <div>
-          <CardTitle>Transactions</CardTitle>
-          <CardDescription>View all transactions for this project</CardDescription>
+          <CardTitle>Expenses</CardTitle>
+          <CardDescription>View all expenses for this project</CardDescription>
         </div>
         <div>
           <Input
             type="text"
-            placeholder="Search transactions"
-            className=""
+            placeholder="Search expenses"
             onChange={(e) => performSearch(e.target.value)}
           />
         </div>
@@ -130,7 +104,7 @@ export default function Transactions() {
             <Loader2 className="h-6 w-6 animate-spin" />
           </div>
         ) : (
-          <ReusableTable headers={headers} data={transactions} />
+          <ReusableTable headers={headers} data={expenses} />
         )}
       </CardContent>
     </Card>

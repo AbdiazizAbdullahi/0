@@ -11,9 +11,21 @@ const expenses = require('./services/expenses')
 const invoices = require('./services/invoices')
 
 function setupIpcHandlers(ipcMain, db, mainWindow) {
-    ipcMain.handle('search-cs', async (event, searchTerm, type) => {
-        return transactions.searchCS(db, searchTerm, type);
-      });
+    ipcMain.handle('search-cs', async (event, searchTerm, type, projectId) => {
+      return transactions.searchCS(db, searchTerm, type, projectId);
+    });
+
+    ipcMain.handle('trans-search', async (event, searchTerm, projectId) => {
+      return transactions.transSearch(db, searchTerm, projectId);
+    });
+
+    ipcMain.handle('invoice-search', async (event, searchTerm, projectId) => {
+      return invoices.invoiceSearch(db, searchTerm, projectId);
+    });
+
+    ipcMain.handle('sales-search', async (event, searchTerm, projectId) => {
+      return sales.salesSearch(db, searchTerm, projectId);
+    });
 
     ipcMain.handle('main-operation', async (event, operation, ...args) => {
         switch (operation) {
@@ -31,39 +43,41 @@ function setupIpcHandlers(ipcMain, db, mainWindow) {
             case 'createSupplier':
                 return suppliers.createSupplier(db, args[0]);
             case 'getAllSuppliers':
-                return suppliers.getAllSuppliers(db);
+                return suppliers.getAllSuppliers(db, args[0]); // args[0]: projectId
             case 'updateSupplier':
                 return suppliers.updateSupplier(db, args[0]);
             case 'archiveSupplier':
                 return suppliers.archiveSupplier(db, args[0]);
             case 'searchSuppliers':
-                return suppliers.searchSuppliers(db, args[0]);
+                return suppliers.searchSuppliers(db, args[0]); // add projectId in function if updated
             case 'getSupplierById':
                 return suppliers.getSupplierById(db, args[0]);
+            case 'getSupplierDetails':
+                return suppliers.getSupplierDetails(db, args[0]);
 
             // Agents
             case 'createAgent':
                 return agents.createAgent(db, args[0]);
             case 'getAllAgents':
-                return agents.getAllAgents(db);
+                return agents.getAllAgents(db, args[0]); // args[0]: projectId
             case 'updateAgent':
                 return agents.updateAgent(db, args[0]);
             case 'archiveAgent':
                 return agents.archiveAgent(db, args[0]);
             case 'searchAgents':
-                return agents.searchAgents(db, args[0]);
+                return agents.searchAgents(db, args[0]); // expect projectId included in function, adjust accordingly
 
             // Clients
             case 'createClient':
                 return clients.createClient(db, args[0]);
             case 'getAllClients':
-                return clients.getAllClients(db);
+                return clients.getAllClients(db, args[0]); // args[0]: projectId
             case 'updateClient':
                 return clients.updateClient(db, args[0]);
             case 'archiveClient':
                 return clients.archiveClient(db, args[0]);
             case 'searchClients':
-                return clients.searchClients(db, args[0]);
+                return clients.searchClients(db, args[0]); // expect projectId
 
             // Projects
             case 'createProject':
@@ -83,25 +97,25 @@ function setupIpcHandlers(ipcMain, db, mainWindow) {
             case 'createSale':
                 return sales.createSale(db, args[0]);
             case 'getAllSales':
-                return sales.getAllSales(db);
+                return sales.getAllSales(db, args[0]); // args[0]: projectId
             case 'updateSale':
                 return sales.updateSale(db, args[0]);
             case 'archiveSale':
                 return sales.archiveSale(db, args[0]);
             case 'searchSales':
-                return sales.searchSales(db, args[0]);
+                return sales.searchSales(db, args[0]); // args[0]: projectId
 
             // Staff
             case 'createStaff':
                 return staff.createStaff(db, args[0]);
             case 'getAllStaff':
-                return staff.getAllStaff(db);
+                return staff.getAllStaff(db, args[0]); // args[0]: projectId
             case 'updateStaff':
                 return staff.updateStaff(db, args[0]);
             case 'archiveStaff':
                 return staff.archiveStaff(db, args[0]);
             case 'searchStaff':
-                return staff.searchStaff(db, args[0]);
+                return staff.searchStaff(db, args[0]); // args[0]: projectId
             case 'getStaffById':
                 return staff.getStaffById(db, args[0]);
 
@@ -109,7 +123,7 @@ function setupIpcHandlers(ipcMain, db, mainWindow) {
             case 'createAccount':
                 return accounts.createAccount(db, args[0]);
             case 'getAllAccounts':
-                return accounts.getAllAccounts(db);
+                return accounts.getAllAccounts(db, args[0]); // args[0]: projectId
             case 'getAccountById':
                 return accounts.getAccountById(db, args[0]);
             case 'updateAccount':
@@ -128,16 +142,12 @@ function setupIpcHandlers(ipcMain, db, mainWindow) {
                 return transactions.updateTransaction(db, args[0]);
             case 'archiveTransaction':
                 return transactions.archiveTransaction(db, args[0]);
-            case 'searchTransactions':
-                return transactions.searchTransactions(db, args[0], args[1]);
-            case 'getTodayTransactions':
-                return transactions.getTodayTransactions(db);
 
             // Expenses
             case 'createExpense':
                 return expenses.createExpense(db, args[0]);
             case 'getAllExpenses':
-                return expenses.getAllExpenses(db);
+                return expenses.getAllExpenses(db, args[0]); // args[0]: projectId
             case 'getExpenseById':
                 return expenses.getExpenseById(db, args[0]);
             case 'updateExpense':
@@ -149,7 +159,7 @@ function setupIpcHandlers(ipcMain, db, mainWindow) {
             case 'createInvoice':
                 return invoices.createInvoice(db, args[0]);
             case 'getAllInvoices':
-                return invoices.getAllInvoices(db);
+                return invoices.getAllInvoices(db, args[0]); // already updated
             case 'getInvoiceById':
                 return invoices.getInvoiceById(db, args[0]);
             case 'updateInvoice':

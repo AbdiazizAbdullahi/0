@@ -13,7 +13,7 @@ async function createSale(db, saleData) {
     await db.put(client);
 
     const sale = {
-      _id: saleData._id || uuidv4(),
+      _id: uuidv4(),
       type: 'sale',
       state: 'Active',
       createdAt: new Date().toISOString(),
@@ -35,12 +35,13 @@ async function createSale(db, saleData) {
 }
 
 // Retrieve all active sales from the database
-async function getAllSales(db) {
+async function getAllSales(db, projectId) {
   try {
     const result = await db.find({
       selector: { 
         type: 'sale',
-        state: 'Active' 
+        state: 'Active',
+        projectId: projectId
       }
     });
 
@@ -104,31 +105,23 @@ async function archiveSale(db, saleId) {
   }
 }
 
-// Search sales using flexible matching criteria
-async function searchSales(db, searchTerm, state = 'Active') {
+async function salesSearch(db, searchTerm, projectId) {
   try {
-    const result = await db.find({
+    const searchResult = await db.find({
       selector: {
         $or: [
-          { saleNumber: { $regex: new RegExp(searchTerm, 'i') } },
-          { customerName: { $regex: new RegExp(searchTerm, 'i') } },
-          { productName: { $regex: new RegExp(searchTerm, 'i') } }
+          { clientName: { $regex: new RegExp(searchTerm, 'i') } },
+          { agentName: { $regex: new RegExp(searchTerm, 'i') } },
+          { houseNo: { $regex: new RegExp(searchTerm, 'i') } }
         ],
-        state: state,
-        type: 'sale'
+        state: "Active",
+        type: "sale",
+        projectId: projectId
       }
     });
-
-    return {
-      success: true,
-      sales: result.docs
-    };
+    return { success: true, sales: searchResult.docs };
   } catch (error) {
-    console.error('Sale search failed:', error);
-    return { 
-      success: false, 
-      error: error.message 
-    };
+    return { success: false, error: error.message };
   }
 }
 
@@ -137,5 +130,5 @@ module.exports = {
   getAllSales,
   updateSale,
   archiveSale,
-  searchSales
+  salesSearch
 };

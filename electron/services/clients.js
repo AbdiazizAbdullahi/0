@@ -4,7 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 async function createClient(db, clientData) {
   try {
     const client = {
-      _id: clientData._id || uuidv4(),
+      _id: uuidv4(),
       type: 'client',
       state: 'Active',
       createdAt: new Date().toISOString(),
@@ -26,12 +26,13 @@ async function createClient(db, clientData) {
 }
 
 // Retrieve all active clients from the database
-async function getAllClients(db) {
+async function getAllClients(db, projectId) {
   try {
     const result = await db.find({
       selector: { 
         type: 'client',
-        state: 'Active' 
+        state: 'Active',
+        projectId: projectId
       }
     });
 
@@ -96,7 +97,7 @@ async function archiveClient(db, clientId) {
 }
 
 // Search clients using flexible matching criteria
-async function searchClients(db, searchTerm, state = 'Active') {
+async function searchClients(db, searchTerm, projectId, state = 'Active') {
   try {
     const result = await db.find({
       selector: {
@@ -106,7 +107,8 @@ async function searchClients(db, searchTerm, state = 'Active') {
           { email: { $regex: new RegExp(searchTerm, 'i') } }
         ],
         state: state,
-        type: 'client'
+        type: 'client',
+        projectId: projectId
       }
     });
 

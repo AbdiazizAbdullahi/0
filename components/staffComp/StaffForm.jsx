@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import useProjectStore from "@/stores/projectStore"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
@@ -10,10 +11,18 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/componen
 export default function StaffForm({ initialData = {}, onSubmit, mode = "create" }) {
   const [formData, setFormData] = useState({
     name: "",
-    phoneNumber: "",
     role: "",
+    projectId: "",
     ...initialData,
   })
+  const [projectId, setProjectId] = useState("")
+  const project = useProjectStore((state) => state.project)
+
+  useEffect(() => {
+    if (project?._id) {
+      setProjectId(project._id)
+    }
+  }, [project])
 
   useEffect(() => {
     if (initialData) {
@@ -55,18 +64,6 @@ export default function StaffForm({ initialData = {}, onSubmit, mode = "create" 
               onChange={handleChange}
               placeholder="Enter staff's full name"
               required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="phoneNumber">Phone Number</Label>
-            <Input
-              id="phoneNumber"
-              name="phoneNumber"
-              value={formData.phoneNumber}
-              onChange={handleChange}
-              placeholder="Enter staff's phone number"
-              required
-              type="tel"
             />
           </div>
           <div className="space-y-2">

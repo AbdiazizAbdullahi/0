@@ -1,21 +1,25 @@
 import React, { useState, useEffect } from 'react'
+import useProjectStore from '@/stores/projectStore'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-export default function InvoiceForm({ invoice, onSubmit, mode }) {
+export default function InvoiceForm({ invoice, onSubmit }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     invoiceNumber: '',
     supplierId: '',
+    supplierName: '',
     projectId: '',
-    totalAmount: '',
+    amount: '',
+    quantity: '',
+    price: '',
     date: '',
     description: ''
   })
   const [suppliers, setSuppliers] = useState([])
-  const [projects, setProjects] = useState([])
+  const project = useProjectStore((state) => state.project)
 
   useEffect(() => {
     fetchSuppliers()
@@ -25,6 +29,7 @@ export default function InvoiceForm({ invoice, onSubmit, mode }) {
       setFormData({
         invoiceNumber: invoice.invoiceNumber || '',
         supplierId: invoice.supplierId || '',
+        supplierName: invoice.supplierName || '',
         projectId: invoice.projectId || '',
         totalAmount: invoice.totalAmount || '',
         date: invoice.date ? new Date(invoice.date).toISOString().split('T')[0] : '',
@@ -44,17 +49,6 @@ export default function InvoiceForm({ invoice, onSubmit, mode }) {
     }
   }
 
-  const fetchProjects = async () => {
-    try {
-      const response = await window.electronAPI.mainOperation('getAllProjects')
-      if (response.success) {
-        setProjects(response.projects)
-      }
-    } catch (error) {
-      console.error('Failed to fetch projects:', error)
-    }
-  }
-
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({
@@ -67,13 +61,6 @@ export default function InvoiceForm({ invoice, onSubmit, mode }) {
     setFormData(prev => ({
       ...prev,
       supplierId: value
-    }))
-  }
-
-  const handleProjectChange = (value) => {
-    setFormData(prev => ({
-      ...prev,
-      projectId: value
     }))
   }
 
@@ -131,32 +118,13 @@ export default function InvoiceForm({ invoice, onSubmit, mode }) {
           </SelectContent>
         </Select>
       </div>
-
-      <div>
-        <Label>Project</Label>
-        <Select
-          value={formData.projectId}
-          onValueChange={handleProjectChange}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select a project" />
-          </SelectTrigger>
-          <SelectContent>
-            {projects.map(project => (
-              <SelectItem key={project._id} value={project._id}>
-                {project.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
       
       <div>
-        <Label>Total Amount</Label>
+        <Label>Amount</Label>
         <Input
-          name="totalAmount"
+          name="amount"
           type="number"
-          value={formData.totalAmount}
+          value={formData.amount}
           onChange={handleChange}
           required
         />
