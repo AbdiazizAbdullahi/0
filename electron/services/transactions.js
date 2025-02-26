@@ -53,15 +53,17 @@ async function createTransaction(db, transactionData) {
     let destAmount = transactionData.amount;
     
     // If currencies differ, convert amounts
-    if (sourceDoc.currency !== destDoc.currency) {
-      if (sourceDoc.currency === 'USD' && destDoc.currency === 'KES') {
-        // Convert USD to KES
-        // sourceAmount = transactionData.amount * transactionData.rate;
-        destAmount = transactionData.amount * transactionData.rate;
-      } else if (sourceDoc.currency === 'KES' && destDoc.currency === 'USD') {
-        // Convert KES to USD
-        // sourceAmount = transactionData.amount / transactionData.rate;
-        destAmount = transactionData.amount / transactionData.rate;
+    // Default currencies to KES if not specified
+    const sourceCurrency = sourceDoc.currency || 'KES';
+    const destCurrency = destDoc.currency || 'KES';
+
+    if (sourceCurrency !== destCurrency) {
+      if (sourceCurrency === 'USD' && destCurrency === 'KES') {
+      // Convert USD to KES and round down
+      destAmount = Math.floor(transactionData.amount * transactionData.rate);
+      } else if (sourceCurrency === 'KES' && destCurrency === 'USD') {
+      // Convert KES to USD and round down
+      destAmount = Math.floor(transactionData.amount / transactionData.rate);
       }
     }
 

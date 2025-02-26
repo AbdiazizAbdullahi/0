@@ -129,30 +129,31 @@ export function AddTransaction({ onTransactionAdded }) {
         "date": date.toISOString(),
         "projectId": projectId
       }
+      console.log('transData:', transData);
 
-      const result = await window.electronAPI.mainOperation('createTransaction', transData);
-      if (result.success) {
-        if (onTransactionAdded) {
-          onTransactionAdded(transData);
-        }
+      // const result = await window.electronAPI.mainOperation('createTransaction', transData);
+      // if (result.success) {
+      //   if (onTransactionAdded) {
+      //     onTransactionAdded(transData);
+      //   }
         
-        // Reset form
-        setAmount(0);
-        setDescription("");
-        setSource(null);
-        setDestination("account");
-        setFrom(null);
-        setTo(null);
-        setDate(() => new Date());
-        setFromLabel("");
-        setToLabel("");
-        setSearchTerm("");
-        setSearchResult([]);
-        setOpen(false);
-        setProjectId(null);
-      } else {
-        throw new Error(result.error || 'Failed to create transaction');
-      }
+      //   // Reset form
+      //   setAmount(0);
+      //   setDescription("");
+      //   setSource(null);
+      //   setDestination("account");
+      //   setFrom(null);
+      //   setTo(null);
+      //   setDate(() => new Date());
+      //   setFromLabel("");
+      //   setToLabel("");
+      //   setSearchTerm("");
+      //   setSearchResult([]);
+      //   setOpen(false);
+      //   setProjectId(null);
+      // } else {
+      //   throw new Error(result.error || 'Failed to create transaction');
+      // }
     } catch (error) {
       console.error('Error recording transaction:', error);
       setAlert({

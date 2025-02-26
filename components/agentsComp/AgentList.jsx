@@ -16,6 +16,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import useProjectStore from '@/stores/projectStore'
+import { useRouter } from 'next/router'
+import { formatCurrency } from '@/lib/utils'
 
 export default function AgentList() {
   const [agents, setAgents] = useState([])
@@ -28,6 +30,7 @@ export default function AgentList() {
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false)
   const [projectId, setProjectId] = useState('')
   const project = useProjectStore((state) => state.project)
+  const router = useRouter();
 
   useEffect(() => {
     if (project?._id) {
@@ -62,8 +65,7 @@ export default function AgentList() {
   }
 
   const handleViewAgent = (agent) => {
-    setSelectedAgent(agent)
-    setIsModalOpen(true)
+    router.push(`/agents/${agent._id}`)
   }
 
   const handleArchiveAgent = async () => {
@@ -116,8 +118,7 @@ export default function AgentList() {
           <thead>
             <tr className="border-b">
               <th className="text-left p-4">Name</th>
-              <th className="text-left p-4">Phone Number</th>
-              <th className="text-left p-4">Email</th>
+              <th className="text-left p-4">Balance</th>
               <th className="text-left p-4">Actions</th>
             </tr>
           </thead>
@@ -125,8 +126,7 @@ export default function AgentList() {
             {paginatedAgents.map((agent) => (
               <tr key={agent._id} className="border-b">
                 <td className="p-4">{agent.name}</td>
-                <td className="p-4">{agent.phoneNumber}</td>
-                <td className="p-4">{agent.email}</td>
+                <td className="p-4">{formatCurrency(agent.balance)}</td>
                 <td className="p-4 flex gap-2">
                   <Button 
                     variant="secondary" 

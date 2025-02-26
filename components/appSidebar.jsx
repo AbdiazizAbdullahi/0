@@ -43,7 +43,7 @@ const AppSidebar = () => {
   ]
 
   const secLinks = [
-    { label: "Accounts", icon: Wallet, pageLink: "/finances" },
+    { label: "Accounts", icon: Wallet, pageLink: "/accounts" },
     { label: "Clients", icon: User2, pageLink: "/clients" },
     { label: "Suppliers", icon: Cable, pageLink: "/suppliers" },
     { label: "Agents", icon: UserRoundCog, pageLink: "/agents" },
@@ -58,7 +58,6 @@ const AppSidebar = () => {
     >
       <SidebarHeader className=" py-2">
         <div className="flex items-center justify-between">
-          
           <SidebarTrigger />
         </div>
         {/* {state === "expanded" && <h1 className="text-xl font-bold mt-2 text-primary">Company Name</h1>} */}

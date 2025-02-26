@@ -23,6 +23,10 @@ function setupIpcHandlers(ipcMain, db, mainWindow) {
       return invoices.invoiceSearch(db, searchTerm, projectId);
     });
 
+    ipcMain.handle('expense-search', async (event, searchTerm, projectId) => {
+      return expenses.expenseSearch(db, searchTerm, projectId);
+    });
+
     ipcMain.handle('sales-search', async (event, searchTerm, projectId) => {
       return sales.salesSearch(db, searchTerm, projectId);
     });
@@ -54,6 +58,8 @@ function setupIpcHandlers(ipcMain, db, mainWindow) {
                 return suppliers.getSupplierById(db, args[0]);
             case 'getSupplierDetails':
                 return suppliers.getSupplierDetails(db, args[0]);
+            case 'supplierPDF':
+                return suppliers.supplierPDF(args[0]);
 
             // Agents
             case 'createAgent':
@@ -66,6 +72,10 @@ function setupIpcHandlers(ipcMain, db, mainWindow) {
                 return agents.archiveAgent(db, args[0]);
             case 'searchAgents':
                 return agents.searchAgents(db, args[0]); // expect projectId included in function, adjust accordingly
+            case 'getAgentDetails':
+                return agents.getAgentDetails(db, args[0]);
+            case 'agentPDF':
+                return agents.agentPDF(args[0]);
 
             // Clients
             case 'createClient':
@@ -78,6 +88,10 @@ function setupIpcHandlers(ipcMain, db, mainWindow) {
                 return clients.archiveClient(db, args[0]);
             case 'searchClients':
                 return clients.searchClients(db, args[0]); // expect projectId
+            case 'getClientDetails':
+                return clients.getClientDetails(db, args[0]);
+            case 'clientPDF':
+                return clients.clientPDF(args[0]);
 
             // Projects
             case 'createProject':
@@ -154,6 +168,10 @@ function setupIpcHandlers(ipcMain, db, mainWindow) {
                 return expenses.updateExpense(db, args[0]);
             case 'archiveExpense':
                 return expenses.archiveExpense(db, args[0]);
+            case 'filterExpenses':
+                return await expenses.filterExpenses(db, args[0], args[1]);
+            case 'getExpenseStats':
+                return await expenses.getExpenseStats(db, args[0]);
 
             // Invoices
             case 'createInvoice':

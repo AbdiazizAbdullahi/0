@@ -16,6 +16,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import useProjectStore from '@/stores/projectStore'
+import { useRouter } from 'next/router'
+import { formatCurrency } from '@/lib/utils'
 
 export default function ClientList() {
   const [clients, setClients] = useState([])
@@ -28,6 +30,7 @@ export default function ClientList() {
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false)
   const [projectId, setProjectId] = useState('')
   const project = useProjectStore(state => state.project)
+  const router = useRouter()
 
   useEffect(() => {
     if (project?._id) {
@@ -62,8 +65,7 @@ export default function ClientList() {
   }
 
   const handleViewClient = (client) => {
-    setSelectedClient(client)
-    setIsModalOpen(true)
+    router.push(`/clients/${client._id}`)
   }
 
   const handleArchiveClient = async () => {
@@ -87,8 +89,7 @@ export default function ClientList() {
   }
 
   const filteredClients = clients.filter(client => 
-    client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.phoneNumber.toLowerCase().includes(searchTerm.toLowerCase())
+    client.name.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const paginatedClients = filteredClients.slice(
@@ -124,7 +125,7 @@ export default function ClientList() {
             {paginatedClients.map((client) => (
               <tr key={client._id} className="border-b">
                 <td className="p-4">{client.name}</td>
-                <td className="p-4">{client.balance}</td>
+                <td className="p-4">{formatCurrency(client.balance)}</td>
                 <td className="p-4 flex gap-2">
                   <Button 
                     variant="secondary" 

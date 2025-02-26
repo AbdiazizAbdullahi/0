@@ -1,19 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { BanknoteIcon as Bank, CreditCard, DollarSign } from "lucide-react"
 
-const bankAccounts = [
-  { id: "1", bankName: "Chase Bank", accountNumber: "****1234", balance: 5000.0 },
-  { id: "2", bankName: "Bank of America", accountNumber: "****5678", balance: 7500.5 },
-  { id: "3", bankName: "Wells Fargo", accountNumber: "****9012", balance: 3200.75 },
-]
-
 export default function BankAccounts() {
   return (
-    <Card className="w-full max-w-3xl">
+    <Card className="w-full">
       <CardHeader className="py-2" >
-        <CardTitle className="text-2xl font-bold">Project Bank Accounts</CardTitle>
+        <CardTitle className="text-2xl font-bold">Bank Accounts</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent >
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {bankAccounts.map((account) => (
             <Card key={account.id} className="inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-background z-0">

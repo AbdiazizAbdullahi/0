@@ -6,5 +6,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   searchCS: (searchTerm, type, projectId) => ipcRenderer.invoke('search-cs', searchTerm, type, projectId),
   transSearch: (searchTerm, projectId) => ipcRenderer.invoke('trans-search', searchTerm, projectId),
   invoiceSearch: (searchTerm, projectId) => ipcRenderer.invoke('invoice-search', searchTerm, projectId),
+  expenseSearch: (searchTerm, projectId) => ipcRenderer.invoke('expense-search', searchTerm, projectId),
   salesSearch: (searchTerm, projectId) => ipcRenderer.invoke('sales-search', searchTerm, projectId)
 });

@@ -39,12 +39,12 @@ export default function Transactions() {
       })
     },
     { label: "Description", field: "description" },
+    { label: "Currency", field: "currency" },
     { 
-      label: "Amount", 
+      label: "Amount",
       field: "amount",
       format: (value) => value.toLocaleString(undefined, { minimumFractionDigits: 0 })
     },
-    { label: "Currency", field: "currency" },
     { label: "From", field: "fromName"},
     { label: "To", field: "toName"},
     { label: "Type", field: "transType" },

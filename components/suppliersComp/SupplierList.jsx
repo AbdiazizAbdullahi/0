@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import useProjectStore from '@/stores/projectStore'
 import { useRouter } from 'next/router'
+import { formatCurrency } from '@/lib/utils'
 
 export default function SupplierList() {
   const [suppliers, setSuppliers] = useState([])
@@ -120,7 +121,6 @@ export default function SupplierList() {
           <thead>
             <tr className="border-b">
               <th className="text-left p-4">Name</th>
-              <th className="text-left p-4">Phone Number</th>
               <th className="text-left p-4">Balance</th>
               <th className="text-left p-4">Actions</th>
             </tr>
@@ -129,8 +129,7 @@ export default function SupplierList() {
             {paginatedSuppliers.map((supplier) => (
               <tr key={supplier._id} className="border-b">
                 <td className="p-4">{supplier.name}</td>
-                <td className="p-4">{supplier.phoneNumber}</td>
-                <td className="p-4">{supplier.balance}</td>
+                <td className="p-4">{formatCurrency(supplier.balance)}</td>
                 <td className="p-4 flex gap-2">
                   <Button 
                     variant="secondary" 

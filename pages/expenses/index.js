@@ -5,6 +5,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { FilterIcon } from 'lucide-react'
 
 export default function Expenses() {
   const [expenses, setExpenses] = useState([])
@@ -12,6 +17,30 @@ export default function Expenses() {
   const [error, setError] = useState(null)
   const [id, setId] = useState(null)
   const project = useProjectStore(state => state.project)
+  const [accounts, setAccounts] = useState([])
+  const [filters, setFilters] = useState({
+    dateRange: '',
+    expenseType: '',
+    accountName: ''
+  })
+  const [isSheetOpen, setIsSheetOpen] = useState(false)
+
+  const EXPENSE_TYPES = [
+    { id: "utilities", label: "Utilities" },
+    { id: "rent", label: "Rent" },
+    { id: "supplies", label: "Supplies" },
+    { id: "salary", label: "Salary" },
+    { id: "marketing", label: "Marketing" },
+    { id: "maintenance", label: "Maintenance" },
+    { id: "travel", label: "Travel" },
+    { id: "other", label: "Other" },
+  ]
+
+  const DATE_RANGES = [
+    { id: "today", label: "Today" },
+    { id: "past-week", label: "Past Week" },
+    { id: "past-month", label: "Past Month" },
+  ]
 
   useEffect(() => {
     if (project?._id) {
@@ -22,6 +51,7 @@ export default function Expenses() {
   useEffect(() => {
     if (id) {
       fetchExpenses()
+      fetchAccounts()
     }
   }, [id])
 
@@ -36,6 +66,7 @@ export default function Expenses() {
       })
     },
     { label: "Description", field: "description" },
+    { label: "Currency", field: "currency" },
     { 
       label: "Amount", 
       field: "amount",
@@ -65,6 +96,77 @@ export default function Expenses() {
     }
   }
 
+  const fetchAccounts = async () => {
+    try {
+      const result = await window.electronAPI.mainOperation("getAllAccounts", id)
+      if (result.success) {
+        setAccounts(result.accounts || [])
+      }
+    } catch (error) {
+      console.error('Error fetching accounts:', error)
+    }
+  }
+
+  const applyFilters = async () => {
+    try {
+      let startDate = null;
+      let endDate = new Date();
+
+      // Calculate date ranges
+      if (filters.dateRange) {
+        switch (filters.dateRange) {
+          case 'today':
+            startDate = new Date();
+            startDate.setHours(0, 0, 0, 0);
+            break;
+          case 'past-week':
+            startDate = new Date();
+            startDate.setDate(startDate.getDate() - 7);
+            break;
+          case 'past-month':
+            startDate = new Date();
+            startDate.setMonth(startDate.getMonth() - 1);
+            break;
+        }
+      }
+
+      const filterPayload = {
+        startDate: startDate ? startDate.toISOString() : null,
+        endDate: endDate.toISOString(),
+        expenseType: filters.expenseType,
+        accountName: filters.accountName
+      };
+
+      setLoading(true);
+      const response = await window.electronAPI.mainOperation('filterExpenses', {
+        projectId: id,
+        filterData: filterPayload
+      });
+      
+      if (response.success) {
+        setExpenses(response.expenses);
+        setIsSheetOpen(false);
+      } else {
+        setError(response.error || 'Failed to filter expenses');
+      }
+    } catch (error) {
+      console.error('Error applying filters:', error);
+      setError('Error filtering expenses');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      dateRange: '',
+      expenseType: '',
+      accountName: ''
+    })
+    fetchExpenses()
+    setIsSheetOpen(false)
+  }
+
   const performSearch = async (searchTerm) => {
     if (!searchTerm) return;
     try {
@@ -85,12 +187,91 @@ export default function Expenses() {
           <CardTitle>Expenses</CardTitle>
           <CardDescription>View all expenses for this project</CardDescription>
         </div>
-        <div>
+        <div className="flex gap-2">
           <Input
             type="text"
             placeholder="Search expenses"
             onChange={(e) => performSearch(e.target.value)}
           />
+          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon">
+                <FilterIcon className="h-4 w-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent>
+              <SheetHeader>
+                <SheetTitle>Filter Expenses</SheetTitle>
+              </SheetHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label>Date Range</Label>
+                  <Select
+                    value={filters.dateRange}
+                    onValueChange={(value) => setFilters(prev => ({ ...prev, dateRange: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select date range" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {DATE_RANGES.map((range) => (
+                        <SelectItem key={range.id} value={range.id}>
+                          {range.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Expense Type</Label>
+                  <Select
+                    value={filters.expenseType}
+                    onValueChange={(value) => setFilters(prev => ({ ...prev, expenseType: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select expense type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {EXPENSE_TYPES.map((type) => (
+                        <SelectItem key={type.id} value={type.id}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Account</Label>
+                  <Select
+                    value={filters.accountName}
+                    onValueChange={(value) => setFilters(prev => ({ ...prev, accountName: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select account" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {accounts.map((account) => (
+                        <SelectItem key={account._id} value={account.name}>
+                          {account.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex gap-2 pt-4">
+                  <Button variant="outline" onClick={clearFilters}>
+                    Clear
+                  </Button>
+                  <Button onClick={applyFilters}>
+                    Apply Filters
+                  </Button>
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </CardHeader>
       <CardContent className="p-2">

@@ -1,10 +1,19 @@
-import React, { useState, useEffect } from 'react'
-import useProjectStore from '@/stores/projectStore'
+"use client"
+
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useRouter } from 'next/router'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
+import { format } from "date-fns"
+import { CalendarIcon } from "lucide-react"
+import useProjectStore from "@/stores/projectStore"
+import { useToast } from "@/hooks/use-toast"
 
 export default function NewInvoice() {
   const router = useRouter()
@@ -23,6 +32,8 @@ export default function NewInvoice() {
   const [suppliers, setSuppliers] = useState([])
   const [projectId, setProjectId] = useState('')
   const project = useProjectStore(state => state.project)
+  const { toast } = useToast()
+  const [datePickerOpen, setDatePickerOpen] = useState(false)
 
   useEffect(() => {
     if (project?._id) {
@@ -96,92 +107,126 @@ export default function NewInvoice() {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Add New Invoice</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <Label>Invoice Number</Label>
-          <Input
-            name="invoiceNumber"
-            value={formData.invoiceNumber}
-            onChange={handleChange}
-          />
-        </div>
-        
-        <div>
-          <Label>Supplier</Label>
-          <Select
-            value={formData.supplierId}
-            onValueChange={handleSupplierChange}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select a supplier" />
-            </SelectTrigger>
-            <SelectContent>
-              {suppliers.map(supplier => (
-                <SelectItem key={supplier._id} value={supplier._id}>
-                  {supplier.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div>
-          <Label>Amount</Label>
-          <Input
-            name="amount"
-            type="number"
-            value={formData.amount}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        
-        <div>
-          <Label>Date</Label>
-          <Input
-            name="date"
-            type="date"
-            value={formData.date}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        
-        <div>
-          <Label>Description</Label>
-          <Input
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-          />
-        </div>
-        
-        <div>
-          <Label>Quantity</Label>
-          <Input
-            name="quantity"
-            type="number"
-            value={formData.quantity}
-            onChange={handleChange}
-          />
-        </div>
-        
-        <div>
-          <Label>Price per Unit</Label>
-          <Input
-            name="price"
-            type="number"
-            value={formData.price}
-            onChange={handleChange}
-          />
-        </div>
-        
-        <Button type="submit" disabled={isSubmitting}>
-          Create Invoice
-        </Button>
-      </form>
-    </div>
+    <Card className="w-full max-w-2xl mx-auto">
+      <CardHeader>
+        <CardTitle className="text-2xl font-bold">Add New Invoice</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="date">Date</Label>
+            <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !formData.date && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {formData.date ? format(new Date(formData.date), "PPP") : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={formData.date ? new Date(formData.date) : undefined}
+                  onSelect={(date) => {
+                    setFormData(prev => ({
+                      ...prev,
+                      date: date ? new Date(date.setHours(12)).toISOString().split('T')[0] : ""
+                    }))
+                    setDatePickerOpen(false)
+                  }}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="invoiceNumber">Invoice Number</Label>
+            <Input
+              id="invoiceNumber"
+              name="invoiceNumber"
+              value={formData.invoiceNumber}
+              onChange={handleChange}
+              placeholder="Enter invoice number"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="supplier">Supplier</Label>
+            <Select onValueChange={handleSupplierChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a supplier" />
+              </SelectTrigger>
+              <SelectContent>
+                {suppliers.map(supplier => (
+                  <SelectItem key={supplier._id} value={supplier._id}>
+                    {supplier.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="quantity">Quantity</Label>
+              <Input
+                id="quantity"
+                name="quantity"
+                type="number"
+                value={formData.quantity}
+                onChange={handleChange}
+                placeholder="Enter quantity"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="price">Price per Unit</Label>
+              <Input
+                id="price"
+                name="price"
+                type="number"
+                value={formData.price}
+                onChange={handleChange}
+                placeholder="Enter price"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="amount">Total Amount</Label>
+            <Input
+              id="amount"
+              name="amount"
+              type="number"
+              value={formData.amount}
+              onChange={handleChange}
+              placeholder="Enter total amount"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Input
+              id="description"
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              placeholder="Enter description"
+            />
+          </div>
+
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? "Creating..." : "Create Invoice"}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   )
 }

@@ -10,9 +10,7 @@ import useProjectStore from '@/stores/projectStore'
 export default function AgentForm({ onSubmit, initialData = null }) {
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
-    phoneNumber: initialData?.phoneNumber || '',
-    email: initialData?.email || '',
-    address: initialData?.address || '',
+    balance: initialData?.balance || 0,
   })
   const [projectId, setProjectId] = useState('')
   const project = useProjectStore((state) => state.project)
@@ -59,42 +57,6 @@ export default function AgentForm({ onSubmit, initialData = null }) {
           placeholder="Enter agent name"
         />
       </div>
-      <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="phoneNumber" className="text-right">Phone Number</Label>
-        <Input 
-          id="phoneNumber"
-          name="phoneNumber"
-          value={formData.phoneNumber}
-          onChange={handleChange}
-          className="col-span-3"
-          required
-          placeholder="Enter phone number"
-        />
-      </div>
-      <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="email" className="text-right">Email</Label>
-        <Input 
-          id="email"
-          name="email"
-          type="email"
-          value={formData.email}
-          onChange={handleChange}
-          className="col-span-3"
-          placeholder="Enter email address"
-        />
-      </div>
-      <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="address" className="text-right">Address</Label>
-        <Input 
-          id="address"
-          name="address"
-          value={formData.address}
-          onChange={handleChange}
-          className="col-span-3"
-          placeholder="Enter address"
-        />
-      </div>
-      
       <DialogFooter>
         <Button type="submit">
           {initialData ? 'Update' : 'Create'}
