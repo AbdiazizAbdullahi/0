@@ -60,3 +60,5 @@ export const NewITES = forwardRef((props, ref) => {
     </TooltipProvider>
   )
 })
+
+NewITES.displayName = 'NewITES'

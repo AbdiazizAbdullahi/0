@@ -20,7 +20,8 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
 export default function AgentDetail() {
-  const { id } = useParams()
+  const params = useParams()
+  const id = params?.id
 
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
