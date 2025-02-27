@@ -13,6 +13,7 @@ function createInvoice(db, invoiceData) {
     invoiceNumber: invoiceData.invoiceNumber || '',
     quantity: invoiceData.quantity || '',
     price: invoiceData.price || '',
+    rate: invoiceData.rate || 1,
     createdAt: new Date().toISOString(),
     type: "invoice",
     state: "Active",
@@ -21,8 +22,16 @@ function createInvoice(db, invoiceData) {
   return db
     .get(invoiceData.supplierId)
     .then((supplier) => {
-      // Update supplier's balance
-      supplier.balance = (supplier.balance || 0) + parseInt(invoiceData.amount);
+      // Convert amount if currencies are different
+      let convertedAmount = invoice.amount;
+      if (supplier.currency === 'USD' && invoiceData.currency === 'KES') {
+        convertedAmount = Math.floor(invoice.amount / invoice.rate);
+      } else if (supplier.currency === 'KES' && invoiceData.currency === 'USD') {
+        convertedAmount = Math.floor(invoice.amount * invoice.rate);
+      }
+      
+      // Update supplier's balance with converted amount
+      supplier.balance = (supplier.balance || 0) + convertedAmount;
       return db.put(supplier);
     })
     .then(() => {

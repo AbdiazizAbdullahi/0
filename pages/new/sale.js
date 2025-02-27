@@ -27,7 +27,9 @@ export default function NewSale() {
     agentId: '',
     agentName: '',
     commission: 0,
-    projectId: ''
+    projectId: '',
+    currency: 'KES',
+    rate: '1'
   })
   const [clients, setClients] = useState([])
   const [agents, setAgents] = useState([])
@@ -76,7 +78,8 @@ export default function NewSale() {
         ...formData,
         price: parseFloat(formData.price),
         date: new Date(formData.date).toISOString(),
-        projectId: project._id
+        projectId: project._id,
+        rate: parseFloat(formData.rate)
       }
 
       const response = await window.electronAPI.mainOperation('createSale', saleData)
@@ -230,6 +233,37 @@ export default function NewSale() {
                 value={formData.commission}
                 onChange={handleChange}
                 placeholder="Enter commission"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="currency">Currency</Label>
+              <Select
+                value={formData.currency}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, currency: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select currency" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="USD">USD</SelectItem>
+                  <SelectItem value="KES">KES</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="rate">Exchange Rate</Label>
+              <Input
+                id="rate"
+                name="rate"
+                type="number"
+                value={formData.rate}
+                onChange={handleChange}
+                placeholder="Enter exchange rate"
+                step="0.01"
               />
             </div>
           </div>

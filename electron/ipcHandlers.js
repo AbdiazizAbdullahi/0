@@ -9,6 +9,7 @@ const accounts = require('./services/accounts')
 const transactions = require('./services/transactions')
 const expenses = require('./services/expenses')
 const invoices = require('./services/invoices')
+const auth = require('./services/login')
 
 function setupIpcHandlers(ipcMain, db, mainWindow) {
     ipcMain.handle('search-cs', async (event, searchTerm, type, projectId) => {
@@ -29,6 +30,10 @@ function setupIpcHandlers(ipcMain, db, mainWindow) {
 
     ipcMain.handle('sales-search', async (event, searchTerm, projectId) => {
       return sales.salesSearch(db, searchTerm, projectId);
+    });
+
+    ipcMain.handle('login', async (event, phone, passcode) => {
+      return auth.loginStaff(db, phone, passcode);
     });
 
     ipcMain.handle('main-operation', async (event, operation, ...args) => {
@@ -184,6 +189,9 @@ function setupIpcHandlers(ipcMain, db, mainWindow) {
                 return invoices.updateInvoice(db, args[0]);
             case 'archiveInvoice':
                 return invoices.archiveInvoice(db, args[0]);
+
+            case 'seedAdminIfNeeded':
+                return auth.seedAdminIfNeeded(db);
 
             default:
                 throw new Error(`Unknown operation: ${operation}`);

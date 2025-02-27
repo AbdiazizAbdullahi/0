@@ -7,5 +7,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   transSearch: (searchTerm, projectId) => ipcRenderer.invoke('trans-search', searchTerm, projectId),
   invoiceSearch: (searchTerm, projectId) => ipcRenderer.invoke('invoice-search', searchTerm, projectId),
   expenseSearch: (searchTerm, projectId) => ipcRenderer.invoke('expense-search', searchTerm, projectId),
-  salesSearch: (searchTerm, projectId) => ipcRenderer.invoke('sales-search', searchTerm, projectId)
+  salesSearch: (searchTerm, projectId) => ipcRenderer.invoke('sales-search', searchTerm, projectId),
+  login: (phone, passcode) => ipcRenderer.invoke('login', phone, passcode)
 });

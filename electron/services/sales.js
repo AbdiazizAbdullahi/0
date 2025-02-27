@@ -6,8 +6,18 @@ async function createSale(db, saleData) {
     // Fetch the client first
     const client = await db.get(saleData.clientId);
 
-    // Subtract the sale price from the client's balance
-    client.balance -= saleData.price;
+    // Convert price to client's currency if they differ
+    let convertedPrice = saleData.price;
+    if (saleData.currency !== client.currency) {
+      if (saleData.currency === 'USD' && client.currency === 'KES') {
+        convertedPrice *= saleData.rate; // USD to KES using provided rate
+      } else if (saleData.currency === 'KES' && client.currency === 'USD') {
+        convertedPrice /= saleData.rate; // KES to USD using provided rate
+      }
+    }
+
+    // Subtract the converted price from the client's balance
+    client.balance -= Math.floor(convertedPrice);
 
     // Update the client's balance
     await db.put(client);
@@ -17,6 +27,10 @@ async function createSale(db, saleData) {
       type: 'sale',
       state: 'Active',
       createdAt: new Date().toISOString(),
+      convertedPrice,
+      originalPrice: saleData.price,
+      originalCurrency: saleData.currency,
+      conversionRate: saleData.rate,
       ...saleData,
     };
 

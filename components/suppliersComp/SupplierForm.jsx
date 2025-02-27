@@ -14,6 +14,7 @@ export function SupplierForm({ supplier, onSubmit, mode = "create" }) {
     name: "",
     balance: 0,
     projectId: "",
+    currency: 'KES',
     ...supplier,
   })
   const [projectId, setProjectId] = useState("")
@@ -65,6 +66,22 @@ export function SupplierForm({ supplier, onSubmit, mode = "create" }) {
               placeholder="Enter supplier's full name"
               required
             />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="currency">Currency</Label>
+            <Select
+              name="currency"
+              value={formData.currency}
+              onValueChange={(value) => handleChange({ target: { name: 'currency', value } })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select currency" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="KES">KES</SelectItem>
+                <SelectItem value="USD">USD</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
         <CardFooter>

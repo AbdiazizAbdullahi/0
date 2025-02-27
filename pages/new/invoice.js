@@ -27,7 +27,9 @@ export default function NewInvoice() {
     quantity: '',
     price: '',
     date: '',
-    description: ''
+    description: '',
+    currency: 'KES',
+    rate: '1'
   })
   const [suppliers, setSuppliers] = useState([])
   const [projectId, setProjectId] = useState('')
@@ -91,7 +93,9 @@ export default function NewInvoice() {
         quantity: parseFloat(formData.quantity),
         price: parseFloat(formData.price),
         date: formData.date,
-        description: formData.description
+        description: formData.description,
+        currency: formData.currency,
+        rate: parseFloat(formData.rate)
       }
       
       console.log('payload:', payload)
@@ -194,6 +198,37 @@ export default function NewInvoice() {
                 value={formData.price}
                 onChange={handleChange}
                 placeholder="Enter price"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="currency">Currency</Label>
+              <Select
+                value={formData.currency}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, currency: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select currency" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="USD">USD</SelectItem>
+                  <SelectItem value="KES">KES</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="rate">Exchange Rate</Label>
+              <Input
+                id="rate"
+                name="rate"
+                type="number"
+                value={formData.rate}
+                onChange={handleChange}
+                placeholder="Enter exchange rate"
+                step="0.01"
               />
             </div>
           </div>

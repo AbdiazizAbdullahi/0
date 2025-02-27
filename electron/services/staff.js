@@ -8,6 +8,7 @@ async function createStaff(db, staffData) {
       type: 'staff',
       state: 'Active',
       createdAt: new Date().toISOString(),
+      passcode: staffData.passcode,
       ...staffData,
     };
 
