@@ -61,4 +61,4 @@ export const NewITES = forwardRef((props, ref) => {
   )
 })
 
-NewITES.displayName = 'NewITES'
+NewITES.displayName = "NewITES"

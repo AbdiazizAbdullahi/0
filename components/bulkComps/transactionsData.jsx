@@ -162,8 +162,8 @@ export default function TransactionsData() {
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="debit">DEBIT</SelectItem>
-                <SelectItem value="credit">CREDIT</SelectItem>
+                <SelectItem value="deposit">DEBIT (Deposit)</SelectItem>
+                <SelectItem value="withdraw">CREDIT (Withdraw)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -187,15 +187,6 @@ export default function TransactionsData() {
               </SelectContent>
             </Select>
           </div>
-          {/* <div>
-            <label className="block text-sm font-medium">From Name</label>
-            <Input 
-              type="text" 
-              value={mappingFromName} 
-              readOnly 
-              placeholder="Auto-selected from name" 
-            />
-          </div> */}
           <div>
             <label className="block text-sm font-medium">Destination</label>
             <Select value={mappingDestination} onValueChange={setMappingDestination}>
@@ -230,15 +221,6 @@ export default function TransactionsData() {
               </SelectContent>
             </Select>
           </div>
-          {/* <div className="col-span-2">
-            <label className="block text-sm font-medium">To Name</label>
-            <Input 
-              type="text" 
-              value={mappingToName} 
-              readOnly 
-              placeholder="Auto-selected to name" 
-            />
-          </div> */}
         </div>
       </div>
 

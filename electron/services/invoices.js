@@ -13,6 +13,7 @@ function createInvoice(db, invoiceData) {
     invoiceNumber: invoiceData.invoiceNumber || '',
     quantity: invoiceData.quantity || '',
     price: invoiceData.price || '',
+    currency: invoiceData.currency || 'KES',
     rate: invoiceData.rate || 1,
     createdAt: new Date().toISOString(),
     type: "invoice",
