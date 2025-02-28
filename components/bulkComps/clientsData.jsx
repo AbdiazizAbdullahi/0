@@ -80,7 +80,7 @@ export default function ClientsData() {
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Balance</TableHead>
-                {/* <TableHead>Phone</TableHead> */}
+                <TableHead>Currency</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
@@ -92,7 +92,7 @@ export default function ClientsData() {
                 >
                   <TableCell>{entry.name}</TableCell>
                   <TableCell>{entry.balance}</TableCell>
-                  {/* <TableCell>{entry.phone}</TableCell> */}
+                  <TableCell>{entry.currency}</TableCell>
                   <TableCell>
                     {entry.isValid ? (
                       <span className="text-green-600">Valid</span>

@@ -38,23 +38,25 @@ export default function Sales() {
       })
     },
     { label: "Client", field: "clientName" },
+    { label: "Currency", field: "currency" },
     { 
       label: "Price", 
       field: "price",
       format: (value) => value.toLocaleString(undefined, { minimumFractionDigits: 0 })
     },
     { label: "Unit", field: "houseNo" },
-    { 
-      label: "Action",
-      field: "action",
-      format: (_, row) => (
-        <Button variant="ghost" size="icon" asChild>
-          <Link href={`sales/${row._id}`}>
-            <SquareChartGantt className="h-4 w-4" />
-          </Link>
-        </Button>
-      )
-    },
+    { label: "Exchange Rate", field: "rate" },
+    // { 
+    //   label: "Action",
+    //   field: "action",
+    //   format: (_, row) => (
+    //     <Button variant="ghost" size="icon" asChild>
+    //       <Link href={`sales/${row._id}`}>
+    //         <SquareChartGantt className="h-4 w-4" />
+    //       </Link>
+    //     </Button>
+    //   )
+    // },
   ]
 
   const fetchSales = async () => {

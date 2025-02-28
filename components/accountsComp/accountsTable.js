@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import CreateAccount from './createAccount';
 import { useRouter } from 'next/router';
 import useProjectStore from '@/stores/projectStore';
+import { formatCurrency } from '@/lib/utils';
 
 export default function AccountsTable() {
   const [accounts, setAccounts] = useState([]);
@@ -107,7 +108,7 @@ export default function AccountsTable() {
               {currentAccounts.map((a) => (
                 <TableRow key={a._id} className="text-base">
                   <TableCell className="text-left font-medium">{a.name}</TableCell>
-                  <TableCell className="hidden md:table-cell text-left">{a.currency} {a.balance}</TableCell>
+                  <TableCell className="hidden md:table-cell text-left">{a.currency} {formatCurrency(a.balance)}</TableCell>
                   <TableCell className="text-right">
                     <Button onClick={() => router.push(`/finance/account/${a._id}`)}>View</Button>
                   </TableCell>

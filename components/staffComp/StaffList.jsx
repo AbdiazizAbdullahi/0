@@ -80,14 +80,6 @@ export default function StaffList() {
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           />
         </div>
-        <Select 
-          value={rowsPerPage.toString()} 
-          onValueChange={(value) => setRowsPerPage(Number(value))}
-        >
-          <option value="5">5 rows</option>
-          <option value="10">10 rows</option>
-          <option value="20">20 rows</option>
-        </Select>
       </div>
 
       <div className="bg-white rounded-lg border">
@@ -104,7 +96,7 @@ export default function StaffList() {
             {paginatedStaff.map((member) => (
               <tr key={member._id} className="border-b">
                 <td className="p-4">{member.name}</td>
-                <td className="p-4">{member.phoneNumber}</td>
+                <td className="p-4">{member.phone}</td>
                 <td className="p-4">{member.role}</td>
                 <td className="p-4 flex gap-2">
                   <Button 

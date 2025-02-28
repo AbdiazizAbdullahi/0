@@ -11,6 +11,9 @@ export default function Login() {
   const [error, setError] = useState('');
   const router = useRouter();
   const login = useLoginStore((state) => state.login);
+  const isLoggedIn = useLoginStore((state) => state.isLoggedIn);
+  const user = useLoginStore((state) => state.user);
+  console.log('isLoggedIn', isLoggedIn, 'user', user);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -28,11 +28,11 @@ export default function Expenses() {
   const EXPENSE_TYPES = [
     { id: "utilities", label: "Utilities" },
     { id: "rent", label: "Rent" },
-    { id: "supplies", label: "Supplies" },
-    { id: "salary", label: "Salary" },
-    { id: "marketing", label: "Marketing" },
+    { id: "clearance", label: "Clearance" },
+    { id: "labour", label: "Labour" },
+    { id: "petty cash", label: "Petty Cash" },
     { id: "maintenance", label: "Maintenance" },
-    { id: "travel", label: "Travel" },
+    { id: "transport", label: "Transport" },
     { id: "other", label: "Other" },
   ]
 
@@ -73,6 +73,7 @@ export default function Expenses() {
       format: (value) => value.toLocaleString(undefined, { minimumFractionDigits: 0 })
     },
     { label: "Account", field: "accountName"},
+    { label: "Exchange Rate", field: "rate" },
   ]
 
   const fetchExpenses = async () => {

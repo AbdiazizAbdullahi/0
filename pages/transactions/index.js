@@ -48,17 +48,18 @@ export default function Transactions() {
     { label: "From", field: "fromName"},
     { label: "To", field: "toName"},
     { label: "Type", field: "transType" },
-    { 
-      label: "Action",
-      field: "action",
-      format: (_, row) => (
-        <Button variant="ghost" size="icon" asChild>
-          <Link href={`transactions/${row._id}`}>
-            <SquareChartGantt className="h-4 w-4" />
-          </Link>
-        </Button>
-      )
-    },
+    { label: "Exchange Rate", field: "rate" },
+    // { 
+    //   label: "Action",
+    //   field: "action",
+    //   format: (_, row) => (
+    //     <Button variant="ghost" size="icon" asChild>
+    //       <Link href={`transactions/${row._id}`}>
+    //         <SquareChartGantt className="h-4 w-4" />
+    //       </Link>
+    //     </Button>
+    //   )
+    // },
   ]
 
   const fetchTransactions = async () => {

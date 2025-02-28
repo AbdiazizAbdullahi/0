@@ -5,7 +5,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, DatabaseBackup, Home, RefreshCw } from "lucide-react";
+import { ArrowLeft, DatabaseBackup, Home, LogOut, RefreshCw } from "lucide-react";
 import useLoginStore from "@/stores/loginStore";
 import { useEffect, useState } from "react";
 
@@ -23,9 +23,57 @@ function SplashScreen() {
 export default function App({ Component, pageProps }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { isLoggedIn, logout } = useLoginStore();
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthChecked, setIsAuthChecked] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
+  const [isLoginStoreReady, setIsLoginStoreReady] = useState(false);
+  const logout = useLoginStore((state) => state.logout);
+  const loginStatus = useLoginStore((state) => state.isLoggedIn);
+  const userInfo = useLoginStore((state) => state.user);
+  console.log('isLoggedIn', isLoggedIn, 'user', user);
+
+  // Update login store data
+  useEffect(() => {
+    if (loginStatus !== undefined && userInfo !== undefined) {
+      setIsLoginStoreReady(true);
+      setIsLoggedIn(loginStatus);
+      setUser(userInfo);
+    }
+  }, [loginStatus, userInfo]);
+
+  // Authentication initialization
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        if (!isLoginStoreReady) return;
+
+        if (!isLoggedIn) {
+          await checkAdmin();
+          if (pathname !== "/auth/login") {
+            await router.replace("/auth/login", undefined, { shallow: true });
+          }
+        }
+        setIsAuthChecked(true);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Auth initialization error:", error);
+        setIsAuthChecked(true);
+        setIsLoading(false);
+      }
+    };
+
+    initAuth();
+  }, [isLoggedIn, userInfo, isLoginStoreReady]);
+
+  // Separate effect for handling route protection
+  useEffect(() => {
+    if (isAuthChecked && !isLoading) {
+      if (!isLoggedIn && pathname !== "/auth/login") {
+        router.replace("/auth/login", undefined, { shallow: true });
+      }
+    }
+  }, [isLoggedIn, pathname, isAuthChecked, isLoading]);
 
   const checkAdmin = async () => {
     try {
@@ -40,39 +88,8 @@ export default function App({ Component, pageProps }) {
     }
   };
 
-  useEffect(() => {
-    let mounted = true;
-
-    const initAuth = async () => {
-      try {
-        if (!isLoggedIn) {
-          await checkAdmin();
-          if (mounted && pathname !== "/auth/login") {
-            await router.replace("/auth/login");
-          }
-        }
-        if (mounted) {
-          setIsAuthChecked(true);
-          setIsLoading(false);
-        }
-      } catch (error) {
-        console.error("Auth initialization error:", error);
-        if (mounted) {
-          setIsAuthChecked(true);
-          setIsLoading(false);
-        }
-      }
-    };
-
-    initAuth();
-
-    return () => {
-      mounted = false;
-    };
-  }, [isLoggedIn]);
-
   // Always show splash screen until auth is checked
-  if (isLoading || !isAuthChecked) {
+  if (isLoading || !isAuthChecked || !isLoginStoreReady) {
     return <SplashScreen />;
   }
 
@@ -96,9 +113,6 @@ export default function App({ Component, pageProps }) {
               <Button variant="outline" onClick={() => router.back()} className="w-8 h-8">
                 <ArrowLeft />
               </Button>
-              <Button variant="outline" onClick={() => router.reload()} className="w-8 h-8">
-                <RefreshCw />
-              </Button>
               <Button variant="outline" onClick={() => router.replace('/')} className="w-8 h-8">
                 <Home />
               </Button>
@@ -108,8 +122,8 @@ export default function App({ Component, pageProps }) {
                 <DatabaseBackup />
               </Button>
               <NewITES />
-              <Button variant="outline" onClick={logout}>
-                Logout
+              <Button variant="outline" onClick={logout} className="w-8 h-8">
+                <LogOut />
               </Button>
             </div>
           </div>

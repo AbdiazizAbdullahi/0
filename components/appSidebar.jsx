@@ -1,4 +1,5 @@
 import { useRouter } from "next/router"
+import Link from "next/link"
 import {
   Tags,
   Euro,
@@ -70,7 +71,7 @@ const AppSidebar = () => {
               {links.map((item) => (
                 <SidebarMenuItem key={item.label}>
                   <SidebarMenuButton asChild className="group transition-all duration-300 ease-in-out">
-                    <a
+                    <Link
                       href={item.pageLink}
                       className={`flex items-center space-x-3 rounded-md px-3 py-2 ${
                         router.pathname === item.pageLink ? "bg-primary text-primary-foreground" : "hover:bg-primary/10"
@@ -79,7 +80,7 @@ const AppSidebar = () => {
                       <item.icon className="h-5 w-5" />
                       <span>{item.label}</span>
                       <ChevronRight className="ml-auto h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -96,7 +97,7 @@ const AppSidebar = () => {
               {secLinks.map((item) => (
                 <SidebarMenuItem key={item.label}>
                   <SidebarMenuButton asChild className="group transition-all duration-300 ease-in-out">
-                    <a
+                    <Link
                       href={item.pageLink}
                       className={`flex items-center space-x-3 rounded-md px-3 py-2 ${
                         router.pathname === item.pageLink ? "bg-primary text-primary-foreground" : "hover:bg-primary/10"
@@ -105,7 +106,7 @@ const AppSidebar = () => {
                       <item.icon className="h-5 w-5" />
                       <span>{item.label}</span>
                       <ChevronRight className="ml-auto h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

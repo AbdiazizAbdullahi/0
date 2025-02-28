@@ -39,45 +39,46 @@ export default function Invoices() {
     },
     { label: "Invoice Number", field: "invoiceNumber" },
     { label: "Supplier", field: "supplierName" },
+    { label: "Currency", field: "currency" },
     { 
       label: "Amount", 
       field: "amount",
       format: (value) => value.toLocaleString(undefined, { minimumFractionDigits: 0 })
     },
-    { label: "Status", field: "status" },
-    { 
-      label: "Action",
-      field: "action",
-      format: (row) => (
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
-              <EllipsisVertical className="h-4 w-4" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-40">
-            <div className="flex flex-col gap-2">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="w-full justify-start"
-                onClick={() => handleEdit(row)}
-              >
-                Edit
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="w-full justify-start text-destructive hover:text-destructive"
-                onClick={() => handleDelete(row)}
-              >
-                Delete
-              </Button>
-            </div>
-          </PopoverContent>
-        </Popover>
-      )
-    },
+    { label: "Exchange Rate", field: "rate" },
+    // { 
+    //   label: "Action",
+    //   field: "action",
+    //   format: (row) => (
+    //     <Popover>
+    //       <PopoverTrigger asChild>
+    //         <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
+    //           <EllipsisVertical className="h-4 w-4" />
+    //         </Button>
+    //       </PopoverTrigger>
+    //       <PopoverContent className="w-40">
+    //         <div className="flex flex-col gap-2">
+    //           <Button 
+    //             variant="ghost" 
+    //             size="sm" 
+    //             className="w-full justify-start"
+    //             onClick={() => handleEdit(row)}
+    //           >
+    //             Edit
+    //           </Button>
+    //           <Button 
+    //             variant="ghost" 
+    //             size="sm" 
+    //             className="w-full justify-start text-destructive hover:text-destructive"
+    //             onClick={() => handleDelete(row)}
+    //           >
+    //             Delete
+    //           </Button>
+    //         </div>
+    //       </PopoverContent>
+    //     </Popover>
+    //   )
+    // },
   ]
 
   const fetchInvoices = async () => {

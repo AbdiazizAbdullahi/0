@@ -13,6 +13,8 @@ export default function StaffForm({ initialData = {}, onSubmit, mode = "create" 
     name: "",
     role: "",
     projectId: "",
+    phone: "",
+    passcode: "",
     ...initialData,
   })
   const [projectId, setProjectId] = useState("")
@@ -63,6 +65,30 @@ export default function StaffForm({ initialData = {}, onSubmit, mode = "create" 
               value={formData.name}
               onChange={handleChange}
               placeholder="Enter staff's full name"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="phone">Phone Number</Label>
+            <Input
+              id="phone"
+              name="phone"
+              type="tel"
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="Enter phone number"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="passcode">Passcode</Label>
+            <Input
+              id="passcode"
+              name="passcode"
+              type="password"
+              value={formData.passcode}
+              onChange={handleChange}
+              placeholder="Enter passcode"
               required
             />
           </div>

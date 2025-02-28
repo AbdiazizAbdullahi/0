@@ -11,6 +11,7 @@ async function createClient(db, clientData) {
       type: 'client',
       state: 'Active',
       createdAt: new Date().toISOString(),
+      currency: clientData.currency || 'KES',
       ...clientData,
     };
 
