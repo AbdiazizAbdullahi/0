@@ -167,7 +167,9 @@ async function getClientDetails(db, clientId) {
         debit: 0,
         credit: sale.price,
         type: 'sale',
-        id: sale._id
+        id: sale._id,
+        currency: sale.currency || 'KES',
+        rate: sale.rate || 1
       })),
       // Convert transactions to ledger entries
       ...transactionsResult.docs.map(trans => ({
@@ -176,24 +178,32 @@ async function getClientDetails(db, clientId) {
         debit: trans.from === clientId ? trans.amount : 0,
         credit: trans.to === clientId ? trans.amount : 0,
         type: 'transaction',
-        id: trans._id
+        id: trans._id,
+        currency: trans.currency || 'KES',
+        rate: trans.rate || 1
       }))
     ];
 
-    // Sort by date and calculate balances
+    // Sort by date
     ledgerEntries.sort((a, b) => new Date(a.date) - new Date(b.date));
 
+    // Calculate running balance and metrics
     let balance = 0;
     let totalDebit = 0;
     let totalCredit = 0;
 
     const ledgerWithBalance = ledgerEntries.map(entry => {
-      totalDebit += entry.debit;
-      totalCredit += entry.credit;
-      balance = balance + entry.debit - entry.credit;
+      // Convert to KES for totals if currency is USD
+      const debitInKES = entry.currency === 'USD' ? entry.debit * entry.rate : entry.debit;
+      const creditInKES = entry.currency === 'USD' ? entry.credit * entry.rate : entry.credit;
+      
+      totalDebit += debitInKES;
+      totalCredit += creditInKES;
+      balance = balance + debitInKES - creditInKES;
+      
       return {
         ...entry,
-        balance
+        balance: balance
       };
     });
 

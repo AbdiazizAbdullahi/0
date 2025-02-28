@@ -1,6 +1,6 @@
 {
   "name": "project-0",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "private": true,
   "main": "electron/main.js",
   "scripts": {
@@ -8,6 +8,7 @@
     "build": "next build && npm run copy-static",
     "copy-static": "cp -r ./public ./out/",
     "start": "next start",
+    "jest": "jest",
     "lint": "next lint",
     "electron": "electron .",
     "electron-dev": "concurrently -n \"NEXT,ELECTRON\" -c \"yellow,blue\" --kill-others \"next dev -p 3333\" \"electron .\"",

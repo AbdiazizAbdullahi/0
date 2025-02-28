@@ -39,7 +39,6 @@ export default function Suppliers() {
           <p className="text-muted-foreground">Manage your suppliers.</p>
         </div>
         <div className="flex space-x-2">
-          <Button ><Link href={'/invoices'}>Invoices</Link></Button>
           <Button onClick={() => setIsAddingSupplier(!isAddingSupplier)}>
             {isAddingSupplier ? 'Cancel' : 'Add Supplier'}
           </Button>

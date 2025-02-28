@@ -129,7 +129,7 @@ export default function SupplierList() {
             {paginatedSuppliers.map((supplier) => (
               <tr key={supplier._id} className="border-b">
                 <td className="p-4">{supplier.name}</td>
-                <td className="p-4">{formatCurrency(supplier.balance)}</td>
+                <td className="p-4">{supplier.currency} {formatCurrency(supplier.balance)}</td>
                 <td className="p-4 flex gap-2">
                   <Button 
                     variant="secondary" 

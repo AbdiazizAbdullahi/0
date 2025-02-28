@@ -101,7 +101,7 @@ export default function AccountsTable() {
               <TableRow className="text-base">
                 <TableHead className="text-left">Name</TableHead>
                 <TableHead className="hidden md:table-cell text-left">Balance</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                {/* <TableHead className="text-right">Actions</TableHead> */}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -109,9 +109,9 @@ export default function AccountsTable() {
                 <TableRow key={a._id} className="text-base">
                   <TableCell className="text-left font-medium">{a.name}</TableCell>
                   <TableCell className="hidden md:table-cell text-left">{a.currency} {formatCurrency(a.balance)}</TableCell>
-                  <TableCell className="text-right">
+                  {/* <TableCell className="text-right">
                     <Button onClick={() => router.push(`/finance/account/${a._id}`)}>View</Button>
-                  </TableCell>
+                  </TableCell> */}
                 </TableRow>
               ))}
             </TableBody>

@@ -57,15 +57,35 @@ async function createTransaction(db, transactionData) {
     const sourceCurrency = sourceDoc.currency || 'KES';
     const destCurrency = destDoc.currency || 'KES';
 
-    if (sourceCurrency !== destCurrency) {
+    if (transactionData.currency === 'KES') {
       if (sourceCurrency === 'USD' && destCurrency === 'KES') {
-      // Convert USD to KES and round down
-      destAmount = Math.floor(transactionData.amount * transactionData.rate);
+        sourceAmount = Math.floor(transactionData.amount / transactionData.rate);
       } else if (sourceCurrency === 'KES' && destCurrency === 'USD') {
-      // Convert KES to USD and round down
-      destAmount = Math.floor(transactionData.amount / transactionData.rate);
+        destAmount = Math.floor(transactionData.amount / transactionData.rate);
+      } else if (sourceCurrency === 'USD' && destCurrency === 'USD') {
+        sourceAmount = Math.floor(transactionData.amount / transactionData.rate);
+        destAmount = Math.floor(transactionData.amount / transactionData.rate);
+      }
+    } else if (transactionData.currency === 'USD') {
+      if (sourceCurrency === 'KES' && destCurrency === 'KES') {
+        sourceAmount = Math.floor(transactionData.amount * transactionData.rate);
+        destAmount = Math.floor(transactionData.amount * transactionData.rate);
+      } else if (sourceCurrency === 'KES' && destCurrency === 'USD') {
+        sourceAmount = Math.floor(transactionData.amount * transactionData.rate);
+      } else if (sourceCurrency === 'USD' && destCurrency === 'KES') {
+        destAmount = Math.floor(transactionData.amount * transactionData.rate);
       }
     }
+
+    // if (sourceCurrency !== destCurrency) {
+    //   if (sourceCurrency === 'USD' && destCurrency === 'KES') {
+    //   // Convert USD to KES and round down
+    //   destAmount = Math.floor(transactionData.amount * transactionData.rate);
+    //   } else if (sourceCurrency === 'KES' && destCurrency === 'USD') {
+    //   // Convert KES to USD and round down
+    //   destAmount = Math.floor(transactionData.amount / transactionData.rate);
+    //   }
+    // }
 
     // Update balances
     if (transactionData.transType === 'withdraw') {

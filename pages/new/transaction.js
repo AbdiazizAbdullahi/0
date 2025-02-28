@@ -150,7 +150,7 @@ export default function NewTransaction() {
 
   const renderSourceDestinationSearch = (type, label, setLabel, setValue, dialogState, setDialogState) => (
       <div className="space-y-2">
-        <Label htmlFor={`${type}-select`}>To</Label>
+        <Label htmlFor={`${type}-select`}>{type === 'client' || type === 'supplier' || type === 'agent' ? 'From' : 'To'}</Label>
         <Dialog open={dialogState} onOpenChange={setDialogState}>
           <DialogTrigger asChild>
             <Button 
@@ -266,6 +266,7 @@ export default function NewTransaction() {
                       <SelectItem value="account">Account</SelectItem>
                       <SelectItem value="client">Client</SelectItem>
                       <SelectItem value="supplier">Supplier</SelectItem>
+                      <SelectItem value="agent">Agent</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -295,7 +296,7 @@ export default function NewTransaction() {
                     source, 
                     fromLabel, 
                     setFromLabel, 
-                    setFrom, 
+                    setFrom,
                     dialogOpen, 
                     setDialogOpen
                   )

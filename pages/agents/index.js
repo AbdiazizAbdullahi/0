@@ -16,7 +16,6 @@ export default function Agents() {
           <p className="text-muted-foreground">Manage your agents network.</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">Reports</Button>
           <Button onClick={() => setIsModalOpen(true)}>Add Agent</Button>
         </div>
       </div>

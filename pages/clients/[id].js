@@ -265,10 +265,10 @@ export default function ClientDetail() {
                       <TableCell className="font-medium">{formatDate(entry.date)}</TableCell>
                       <TableCell>{entry.description}</TableCell>
                       <TableCell className="text-right tabular-nums">
-                        {entry.debit ? formatCurrency(entry.debit) : "-"}
+                        {entry.debit ? `${entry.currency} ${formatCurrency(entry.debit)}` : "-"}
                       </TableCell>
                       <TableCell className="text-right tabular-nums">
-                        {entry.credit ? formatCurrency(entry.credit) : "-"}
+                        {entry.credit ? `${entry.currency} ${formatCurrency(entry.credit)}` : "-"}
                       </TableCell>
                       <TableCell className="text-right font-medium tabular-nums">
                         {formatCurrency(Math.abs(entry.balance))}
