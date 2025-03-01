@@ -1,7 +1,18 @@
-const { app, BrowserWindow, ipcMain, protocol } = require('electron');
+const { app, BrowserWindow, ipcMain, protocol, dialog } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const path = require('path');
+const fs = require('fs');
+const { execSync } = require('child_process');
 const { setupDatabase } = require('./database');
 const setupIpcHandlers = require("./ipcHandlers")
+const dotenv = require('dotenv');
+
+// Load environment variables
+if (app.isPackaged) {
+  dotenv.config({ path: path.join(process.resourcesPath, '.env') });
+} else {
+  dotenv.config();
+}
 
 let mainWindow;
 let serve;
@@ -60,8 +71,83 @@ const createWindow = () => {
   }
 };
 
+autoUpdater.on("update-available", (_event, releaseNotes, releaseName) => {
+  const dialogOpts = {
+     type: 'info',
+     buttons: ['Ok'],
+     title: 'Update Available',
+     message: process.platform === 'win32' ? releaseNotes : releaseName,
+     detail: 'A new version download started. The app will be restarted to install the update.'
+  };
+  dialog.showMessageBox(dialogOpts);
+});
+
+autoUpdater.on("update-downloaded", async (_event, releaseNotes, releaseName) => {
+  const dialogOpts = {
+    type: 'info',
+    buttons: ['Restart', 'Later'],
+    title: 'Application Update',
+    message: process.platform === 'win32' ? releaseNotes : releaseName,
+    detail: 'A new version has been downloaded. Restart the application to apply the updates.'
+  };
+  try {
+    const returnValue = await dialog.showMessageBox(dialogOpts);
+    if (returnValue.response === 0) {
+      // Prepare for update
+      prepareForUpdate();
+    }
+  } catch (error) {
+    autoUpdater.logger.error('Error showing update dialog:', error);
+  }
+});
+
+autoUpdater.logger = require('electron-log');
+autoUpdater.logger.transports.file.level = 'debug';
+
+// Ensure proper permissions for auto-updater
+function ensureAutoUpdaterPermissions() {
+  const appUpdateDir = path.join(app.getPath('userData'), 'update');
+  try {
+    if (!fs.existsSync(appUpdateDir)) {
+      fs.mkdirSync(appUpdateDir, { recursive: true });
+    }
+    fs.accessSync(appUpdateDir, fs.constants.W_OK);
+    
+    // Grant full control to Users group
+    if (process.platform === 'win32') {
+      execSync(`icacls "${appUpdateDir}" /grant Users:F /T`);
+    }
+  } catch (err) {
+    autoUpdater.logger.error('Error ensuring auto-updater permissions:', err);
+    dialog.showErrorBox('Update Error', 'Unable to access the update directory. Please run the application as an administrator.');
+  }
+}
+
+function prepareForUpdate() {
+  // Close all windows
+  BrowserWindow.getAllWindows().forEach(window => {
+    window.close();
+  });
+
+  // Close PouchDB
+  if (db && !db.isClosed) {
+    console.log("Closing PouchDB...");
+    db.close();
+  }
+
+  // Set a flag to prevent the app from restarting
+  app.isQuitting = true;
+
+  // Wait a bit to ensure everything is closed, then quit and install
+  setTimeout(() => {
+    app.quit();
+    autoUpdater.quitAndInstall(false, true);
+  }, 2000);
+}
+
 app.on("ready", async () => {
   try {
+    ensureAutoUpdaterPermissions();
     createWindow();
 
     db = setupDatabase();
@@ -69,6 +155,10 @@ app.on("ready", async () => {
 
     setupIpcHandlers(ipcMain, db, mainWindow);
 
+    // Check for updates on app start
+    if (app.isPackaged) {
+      autoUpdater.checkForUpdates();
+    }
   } catch (error) {
     console.error("Failed to open PouchDB:", error);
     app.quit();

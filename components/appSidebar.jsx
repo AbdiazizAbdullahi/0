@@ -48,7 +48,7 @@ const AppSidebar = () => {
     { label: "Clients", icon: User2, pageLink: "/clients" },
     { label: "Suppliers", icon: Cable, pageLink: "/suppliers" },
     { label: "Agents", icon: UserRoundCog, pageLink: "/agents" },
-    { label: "Staff", icon: BriefcaseBusiness, pageLink: "/staff" },
+    // { label: "Staff", icon: BriefcaseBusiness, pageLink: "/staff" },
   ]
 
   return (
