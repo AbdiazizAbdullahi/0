@@ -94,10 +94,14 @@ autoUpdater.on("update-downloaded", async (_event, releaseNotes, releaseName) =>
     const returnValue = await dialog.showMessageBox(dialogOpts);
     if (returnValue.response === 0) {
       // Prepare for update
-      prepareForUpdate();
+      await prepareForUpdate();
+      // Wait a bit to ensure everything is closed properly
+      setTimeout(() => {
+        autoUpdater.quitAndInstall(false, true);
+      }, 2000);
     }
   } catch (error) {
-    autoUpdater.logger.error('Error showing update dialog:', error);
+    autoUpdater.logger.error('Error during update process:', error);
   }
 });
 
@@ -124,25 +128,26 @@ function ensureAutoUpdaterPermissions() {
 }
 
 function prepareForUpdate() {
-  // Close all windows
-  BrowserWindow.getAllWindows().forEach(window => {
-    window.close();
+  return new Promise(async (resolve) => {
+    // Close all windows
+    BrowserWindow.getAllWindows().forEach(window => {
+      window.close();
+    });
+
+    // Close PouchDB
+    if (db) {
+      try {
+        await db.close();
+        console.log("PouchDB closed successfully");
+      } catch (err) {
+        console.error("Error closing PouchDB:", err);
+      }
+    }
+
+    // Set a flag to prevent the app from restarting
+    app.isQuitting = true;
+    resolve();
   });
-
-  // Close PouchDB
-  if (db && !db.isClosed) {
-    console.log("Closing PouchDB...");
-    db.close();
-  }
-
-  // Set a flag to prevent the app from restarting
-  app.isQuitting = true;
-
-  // Wait a bit to ensure everything is closed, then quit and install
-  setTimeout(() => {
-    app.quit();
-    autoUpdater.quitAndInstall(false, true);
-  }, 2000);
 }
 
 app.on("ready", async () => {

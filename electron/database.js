@@ -1,12 +1,15 @@
 const PouchDB = require("pouchdb");
+const { app } = require('electron');
+const path = require('path');
 PouchDB.plugin(require("pouchdb-find"));
 
 let db;
 
 function setupDatabase() {
   if (!db) {
-  db = new PouchDB('my_database', { auto_compaction: true });
-}
+    const dbPath = path.join(app.getPath('userData'), 'Database');
+    db = new PouchDB(dbPath, { auto_compaction: true });
+  }
   return db;
 }
 

@@ -13,9 +13,8 @@ import Image from 'next/image';
 // };
 
 const validatePhoneNumber = (phone) => {
-  // International phone number validation (E.164 format)
-  const re = /^\+?[1-9]\d{1,14}$/;
-  return re.test(phone);
+  const digitCount = phone.replace(/\D/g, '').length;
+  return digitCount > 10;
 };
 
 const PROJECT_STATUSES = [
@@ -142,144 +141,169 @@ export default function ProjectForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 px-2">
-      <div>
-        <Label>Project Name *</Label>
-        <Input 
-          name="name"
-          value={project.name}
-          onChange={handleChange}
-          placeholder="Enter project name"
-          required
-        />
-        {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
-      </div>
-
-      <div>
-        <Label>Date Started</Label>
-        <Input 
-          type="date"
-          name="dateStarted"
-          value={project.dateStarted}
-          onChange={handleChange}
-        />
-        {errors.dateStarted && <p className="text-red-500 text-sm">{errors.dateStarted}</p>}
-      </div>
-
-      <div>
-        <Label>Location *</Label>
-        <Input 
-          name="location"
-          value={project.location}
-          onChange={handleChange}
-          placeholder="Enter project location"
-          required
-        />
-        {errors.location && <p className="text-red-500 text-sm">{errors.location}</p>}
-      </div>
-      <div>
-        <Label>Contact Phone</Label>
-        <Input 
-          name="contactPhone"
-          value={project.contactPhone}
-          onChange={handleChange}
-          placeholder="+1234567890"
-        />
-        {errors.contactPhone && <p className="text-red-500 text-sm">{errors.contactPhone}</p>}
-      </div>
-
-      <div>
-        <Label>Project Manager</Label>
-        <Select 
-          name="projectManager"
-          value={project.projectManager}
-          onValueChange={(value) => setProject(prev => ({...prev, projectManager: value}))}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select Project Manager" />
-          </SelectTrigger>
-          <SelectContent>
-            {teamMembers.map(member => (
-              <SelectItem key={member._id} value={member._id}>
-                {member.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div>
-        <Label>Project Status</Label>
-        <Select 
-          name="projectStatus"
-          value={project.projectStatus}
-          onValueChange={(value) => setProject(prev => ({...prev, projectStatus: value}))}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select Project Status" />
-          </SelectTrigger>
-          <SelectContent>
-            {PROJECT_STATUSES.map(status => (
-              <SelectItem key={status} value={status}>
-                {status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div>
-        <Label>Total Units</Label>
-        <Input 
-          type="number"
-          name="totalUnits"
-          value={project.totalUnits}
-          onChange={handleChange}
-          min="0"
-        />
-        {errors.totalUnits && <p className="text-red-500 text-sm">{errors.totalUnits}</p>}
-      </div>
-
-      <div>
-        <Label>Project Type</Label>
-        <Select 
-          name="projectType"
-          value={project.projectType}
-          onValueChange={(value) => setProject(prev => ({...prev, projectType: value}))}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select Project Type" />
-          </SelectTrigger>
-          <SelectContent>
-            {PROJECT_TYPES.map(type => (
-              <SelectItem key={type} value={type}>
-                {type.replace(/\b\w/g, l => l.toUpperCase())}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div>
-        <Label>Representative Image</Label>
-        <Input 
-          type="file"
-          name="representativeImage"
-          accept="image/jpeg,image/png,image/webp"
-          onChange={handleChange}
-        />
-        {project.representativeImage && (
-          <Image 
-            src={project.representativeImage} 
-            alt="Project Preview"
-            width={100}
-            height={100}
-            className="mt-2 max-w-[200px] max-h-[200px]"
+    <form onSubmit={handleSubmit} className="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Project Name */}
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Project Name *</Label>
+          <Input 
+            name="name"
+            value={project.name}
+            onChange={handleChange}
+            placeholder="Enter project name"
+            required
+            className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
           />
-        )}
+          {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
+        </div>
+
+        {/* Date Started */}
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Date Started</Label>
+          <Input 
+            type="date"
+            name="dateStarted"
+            value={project.dateStarted}
+            onChange={handleChange}
+            className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+          />
+          {errors.dateStarted && <p className="text-red-500 text-sm">{errors.dateStarted}</p>}
+        </div>
+
+        {/* Location */}
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Location *</Label>
+          <Input 
+            name="location"
+            value={project.location}
+            onChange={handleChange}
+            placeholder="Enter project location"
+            required
+            className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+          />
+          {errors.location && <p className="text-red-500 text-sm">{errors.location}</p>}
+        </div>
+
+        {/* Contact Phone */}
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Contact Phone</Label>
+          <Input 
+            name="contactPhone"
+            value={project.contactPhone}
+            onChange={handleChange}
+            placeholder="0745678900"
+            className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+          />
+          {errors.contactPhone && <p className="text-red-500 text-sm">{errors.contactPhone}</p>}
+        </div>
+
+        {/* Project Manager */}
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Project Manager</Label>
+          <Select 
+            name="projectManager"
+            value={project.projectManager}
+            onValueChange={(value) => setProject(prev => ({...prev, projectManager: value}))}
+          >
+            <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-primary/20">
+              <SelectValue placeholder="Select Project Manager" />
+            </SelectTrigger>
+            <SelectContent>
+              {teamMembers.map(member => (
+                <SelectItem key={member._id} value={member._id}>
+                  {member.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Project Status */}
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Project Status</Label>
+          <Select 
+            name="projectStatus"
+            value={project.projectStatus}
+            onValueChange={(value) => setProject(prev => ({...prev, projectStatus: value}))}
+          >
+            <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-primary/20">
+              <SelectValue placeholder="Select Project Status" />
+            </SelectTrigger>
+            <SelectContent>
+              {PROJECT_STATUSES.map(status => (
+                <SelectItem key={status} value={status}>
+                  {status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Total Units */}
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Total Units</Label>
+          <Input 
+            type="number"
+            name="totalUnits"
+            value={project.totalUnits}
+            onChange={handleChange}
+            min="0"
+            className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+          />
+          {errors.totalUnits && <p className="text-red-500 text-sm">{errors.totalUnits}</p>}
+        </div>
+
+        {/* Project Type */}
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Project Type</Label>
+          <Select 
+            name="projectType"
+            value={project.projectType}
+            onValueChange={(value) => setProject(prev => ({...prev, projectType: value}))}
+          >
+            <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-primary/20">
+              <SelectValue placeholder="Select Project Type" />
+            </SelectTrigger>
+            <SelectContent>
+              {PROJECT_TYPES.map(type => (
+                <SelectItem key={type} value={type}>
+                  {type.replace(/\b\w/g, l => l.toUpperCase())}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      <Button type="submit" className="w-full">
+      {/* Image Upload Section */}
+      <div className="space-y-2 mt-6">
+        <Label className="text-sm font-medium">Representative Image</Label>
+        <div className="flex flex-col items-center p-4 border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 hover:border-primary/50 transition-colors duration-200">
+          <Input 
+            type="file"
+            name="representativeImage"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handleChange}
+            className="cursor-pointer"
+          />
+          {project.representativeImage && (
+            <div className="mt-4 relative group">
+              <Image 
+                src={project.representativeImage} 
+                alt="Project Preview"
+                width={200}
+                height={200}
+                className="rounded-lg object-cover shadow-md transition-transform duration-200 group-hover:scale-105"
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
+      <Button 
+        type="submit" 
+        className="w-full mt-8 py-6 text-lg font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+      >
         {initialProject ? 'Update Project' : 'Create Project'}
       </Button>
     </form>
