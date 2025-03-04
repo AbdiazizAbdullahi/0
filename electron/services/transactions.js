@@ -39,15 +39,6 @@ async function createTransaction(db, transactionData) {
       throw new Error('Source or destination not found');
     }
 
-    // Validate balance for withdrawals
-    // if (transactionData.transType === 'withdraw' && sourceDoc.balance < transactionData.amount) {
-    //   throw new Error('Insufficient balance in source account');
-    // }
-
-    // if (transactionData.transType === 'deposit' && transactionData.source === 'account' && sourceDoc.balance < transactionData.amount) {
-    //   throw new Error('Insufficient balance in source account');
-    // }
-
     // Handle currency conversions
     let sourceAmount = transactionData.amount;
     let destAmount = transactionData.amount;
@@ -76,16 +67,6 @@ async function createTransaction(db, transactionData) {
         destAmount = Math.floor(transactionData.amount * transactionData.rate);
       }
     }
-
-    // if (sourceCurrency !== destCurrency) {
-    //   if (sourceCurrency === 'USD' && destCurrency === 'KES') {
-    //   // Convert USD to KES and round down
-    //   destAmount = Math.floor(transactionData.amount * transactionData.rate);
-    //   } else if (sourceCurrency === 'KES' && destCurrency === 'USD') {
-    //   // Convert KES to USD and round down
-    //   destAmount = Math.floor(transactionData.amount / transactionData.rate);
-    //   }
-    // }
 
     // Update balances
     if (transactionData.transType === 'withdraw') {
@@ -198,16 +179,102 @@ function updateTransaction(db, transactionData) {
 }
 
 // Delete a transaction
-function archiveTransaction(db, transactionId) {
-  return db
-    .get(transactionId)
-    .then((transaction) => {
-      transaction.state = "Inactive";
-      transaction.updatedAt = new Date().toISOString();
-      return db.put(transaction);
-    })
-    .then(() => ({ success: true }))
-    .catch((error) => ({ success: false, error: error.message }));
+async function archiveTransaction(db, transactionId) {
+  try {
+    // Get the transaction
+    const transaction = await db.get(transactionId);
+
+    // Get source and destination documents
+    let sourceDoc, destDoc;
+    
+    if (transaction.source === 'account') {
+      sourceDoc = await db.get(transaction.from);
+    } else {
+      const sourceResult = await db.find({
+        selector: {
+          _id: transaction.from,
+          type: transaction.source
+        }
+      });
+      sourceDoc = sourceResult.docs[0];
+    }
+
+    if (transaction.destination === 'account') {
+      destDoc = await db.get(transaction.to);
+    } else {
+      const destResult = await db.find({
+        selector: {
+          _id: transaction.to,
+          type: transaction.destination
+        }
+      });
+      destDoc = destResult.docs[0];
+    }
+
+    if (!sourceDoc || !destDoc) {
+      throw new Error('Source or destination not found');
+    }
+
+    // Handle currency conversions
+    let sourceAmount = transaction.amount;
+    let destAmount = transaction.amount;
+    
+    // Convert amounts based on currencies
+    const sourceCurrency = sourceDoc.currency || 'KES';
+    const destCurrency = destDoc.currency || 'KES';
+
+    if (transaction.currency === 'KES') {
+      if (sourceCurrency === 'USD' && destCurrency === 'KES') {
+        sourceAmount = Math.floor(transaction.amount / transaction.rate);
+      } else if (sourceCurrency === 'KES' && destCurrency === 'USD') {
+        destAmount = Math.floor(transaction.amount / transaction.rate);
+      } else if (sourceCurrency === 'USD' && destCurrency === 'USD') {
+        sourceAmount = Math.floor(transaction.amount / transaction.rate);
+        destAmount = Math.floor(transaction.amount / transaction.rate);
+      }
+    } else if (transaction.currency === 'USD') {
+      if (sourceCurrency === 'KES' && destCurrency === 'KES') {
+        sourceAmount = Math.floor(transaction.amount * transaction.rate);
+        destAmount = Math.floor(transaction.amount * transaction.rate);
+      } else if (sourceCurrency === 'KES' && destCurrency === 'USD') {
+        sourceAmount = Math.floor(transaction.amount * transaction.rate);
+      } else if (sourceCurrency === 'USD' && destCurrency === 'KES') {
+        destAmount = Math.floor(transaction.amount * transaction.rate);
+      }
+    }
+
+    // Reverse the transaction effects
+    if (transaction.transType === 'withdraw') {
+      if (transaction.destination === 'account') {
+        sourceDoc.balance += sourceAmount;
+        destDoc.balance -= destAmount;
+      } else if (transaction.destination !== 'account') {
+        sourceDoc.balance += sourceAmount;
+        destDoc.balance += destAmount;
+      }
+    } else if (transaction.transType === 'deposit') {
+      if (transaction.source === 'account') {
+        sourceDoc.balance += sourceAmount;
+        destDoc.balance -= destAmount;
+      } else if (transaction.source !== 'account') {
+        sourceDoc.balance -= sourceAmount;
+        destDoc.balance -= destAmount;
+      }
+    }
+
+    // Update documents in database
+    await db.put(sourceDoc);
+    await db.put(destDoc);
+
+    // Archive the transaction
+    transaction.state = "Inactive";
+    transaction.updatedAt = new Date().toISOString();
+    await db.put(transaction);
+
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
 }
 
 async function searchCS(db, searchTerm, type, projectId) {

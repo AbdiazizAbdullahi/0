@@ -9,7 +9,10 @@ import { Label } from '@/components/ui/label'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { FilterIcon } from 'lucide-react'
+import { FilterIcon, EllipsisVertical } from 'lucide-react'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import ExpenseDetails from '@/components/expenseComp/expenseDetail'
+import ConfirmDialog from '@/components/commonComp/confirmDialog'
 
 export default function Expenses() {
   const [expenses, setExpenses] = useState([])
@@ -23,7 +26,12 @@ export default function Expenses() {
     expenseType: '',
     accountName: ''
   })
+  const [selectedExpense, setSelectedExpense] = useState(null)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    itemToDelete: null
+  })
 
   const EXPENSE_TYPES = [
     { id: "utilities", label: "Utilities" },
@@ -74,6 +82,39 @@ export default function Expenses() {
     },
     { label: "Account", field: "accountName"},
     { label: "Exchange Rate", field: "rate" },
+    { 
+      label: "Action",
+      field: "action",
+      format: (_, row) => (
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
+              <EllipsisVertical className="h-4 w-4" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-40">
+            <div className="flex flex-col gap-2">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="w-full justify-start"
+                onClick={() => handleView(row)}
+              >
+                View
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="w-full justify-start text-destructive hover:text-destructive"
+                onClick={() => handleDelete(row)}
+              >
+                Archive
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
+      )
+    },
   ]
 
   const fetchExpenses = async () => {
@@ -181,114 +222,161 @@ export default function Expenses() {
     }
   };
 
+  const handleView = (expense) => {
+    setSelectedExpense(expense)
+    setIsSheetOpen(true)
+  }
+
+  const handleDelete = (expense) => {
+    setConfirmDialog({
+      isOpen: true,
+      itemToDelete: expense
+    })
+  }
+
+  const handleConfirmDelete = async () => {
+    try {
+      const response = await window.electronAPI.mainOperation(
+        'archiveExpense', 
+        confirmDialog.itemToDelete._id
+      )
+      if (response.success) {
+        setExpenses(expenses.filter(exp => exp._id !== confirmDialog.itemToDelete._id))
+      }
+    } catch (error) {
+      setError(error.message || 'Error archiving expense')
+    } finally {
+      setConfirmDialog({ isOpen: false, itemToDelete: null })
+    }
+  }
+
   return (
-    <Card className="">
-      <CardHeader className="flex flex-row justify-between items-center">
-        <div>
-          <CardTitle>Expenses</CardTitle>
-          <CardDescription>View all expenses for this project</CardDescription>
-        </div>
-        <div className="flex gap-2">
-          <Input
-            type="text"
-            placeholder="Search expenses"
-            onChange={(e) => performSearch(e.target.value)}
-          />
-          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-            <SheetTrigger asChild>
-              <Button variant="outline" size="icon">
-                <FilterIcon className="h-4 w-4" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent>
-              <SheetHeader>
-                <SheetTitle>Filter Expenses</SheetTitle>
-              </SheetHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label>Date Range</Label>
-                  <Select
-                    value={filters.dateRange}
-                    onValueChange={(value) => setFilters(prev => ({ ...prev, dateRange: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select date range" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {DATE_RANGES.map((range) => (
-                        <SelectItem key={range.id} value={range.id}>
-                          {range.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Expense Type</Label>
-                  <Select
-                    value={filters.expenseType}
-                    onValueChange={(value) => setFilters(prev => ({ ...prev, expenseType: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select expense type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {EXPENSE_TYPES.map((type) => (
-                        <SelectItem key={type.id} value={type.id}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Account</Label>
-                  <Select
-                    value={filters.accountName}
-                    onValueChange={(value) => setFilters(prev => ({ ...prev, accountName: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select account" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {accounts.map((account) => (
-                        <SelectItem key={account._id} value={account.name}>
-                          {account.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex gap-2 pt-4">
-                  <Button variant="outline" onClick={clearFilters}>
-                    Clear
-                  </Button>
-                  <Button onClick={applyFilters}>
-                    Apply Filters
-                  </Button>
-                </div>
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
-      </CardHeader>
-      <CardContent className="p-2">
-        {error && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-        {loading ? (
-          <div className="flex justify-center items-center p-4">
-            <Loader2 className="h-6 w-6 animate-spin" />
+    <>
+      <Card className="">
+        <CardHeader className="flex flex-row justify-between items-center">
+          <div>
+            <CardTitle>Expenses</CardTitle>
+            <CardDescription>View all expenses for this project</CardDescription>
           </div>
-        ) : (
-          <ReusableTable headers={headers} data={expenses} />
-        )}
-      </CardContent>
-    </Card>
+          <div className="flex gap-2">
+            <Input
+              type="text"
+              placeholder="Search expenses"
+              onChange={(e) => performSearch(e.target.value)}
+            />
+            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <FilterIcon className="h-4 w-4" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent>
+                <SheetHeader>
+                  <SheetTitle>Filter Expenses</SheetTitle>
+                </SheetHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label>Date Range</Label>
+                    <Select
+                      value={filters.dateRange}
+                      onValueChange={(value) => setFilters(prev => ({ ...prev, dateRange: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select date range" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {DATE_RANGES.map((range) => (
+                          <SelectItem key={range.id} value={range.id}>
+                            {range.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Expense Type</Label>
+                    <Select
+                      value={filters.expenseType}
+                      onValueChange={(value) => setFilters(prev => ({ ...prev, expenseType: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select expense type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {EXPENSE_TYPES.map((type) => (
+                          <SelectItem key={type.id} value={type.id}>
+                            {type.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Account</Label>
+                    <Select
+                      value={filters.accountName}
+                      onValueChange={(value) => setFilters(prev => ({ ...prev, accountName: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select account" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {accounts.map((account) => (
+                          <SelectItem key={account._id} value={account.name}>
+                            {account.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex gap-2 pt-4">
+                    <Button variant="outline" onClick={clearFilters}>
+                      Clear
+                    </Button>
+                    <Button onClick={applyFilters}>
+                      Apply Filters
+                    </Button>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+        </CardHeader>
+        <CardContent className="p-2">
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          {loading ? (
+            <div className="flex justify-center items-center p-4">
+              <Loader2 className="h-6 w-6 animate-spin" />
+            </div>
+          ) : (
+            <ReusableTable headers={headers} data={expenses} />
+          )}
+        </CardContent>
+      </Card>
+      {selectedExpense && (
+        <ExpenseDetails
+          expense={selectedExpense}
+          isOpen={isSheetOpen}
+          onClose={() => {
+            setIsSheetOpen(false)
+            setSelectedExpense(null)
+          }}
+        />
+      )}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={() => setConfirmDialog({ isOpen: false, itemToDelete: null })}
+        onConfirm={handleConfirmDelete}
+        title="Are you sure?"
+        description="This action cannot be undone. This will permanently archive this expense from the database."
+      />
+    </>
   )
 }

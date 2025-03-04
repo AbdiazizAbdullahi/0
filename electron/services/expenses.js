@@ -98,16 +98,43 @@ function updateExpense(db, expenseData) {
 }
 
 // Delete an expense
-function archiveExpense(db, expenseId) {
-  return db
-    .get(expenseId)
-    .then((expense) => {
-      // Update the state field to "Inactive"
-      expense.state = "Inactive";
-      return db.put(expense);
-    })
-    .then(() => ({ success: true }))
-    .catch((error) => ({ success: false, error: error.message }));
+async function archiveExpense(db, expenseId) {
+  try {
+    const expense = await db.get(expenseId);
+
+    // If there's an associated account, reverse the balance change
+    if (expense.accountId) {
+      const accountResult = await getAccountById(db, expense.accountId);
+      if (accountResult.success) {
+        let addAmount = expense.amount;
+        
+        // Convert amount if currencies are different
+        if (accountResult.account.currency !== expense.currency) {
+          if (expense.currency === 'USD' && accountResult.account.currency === 'KES') {
+            addAmount = Math.floor(expense.amount * expense.rate);
+          } else if (expense.currency === 'KES' && accountResult.account.currency === 'USD') {
+            addAmount = Math.floor(expense.amount / expense.rate);
+          }
+        }
+
+        const updatedAccount = {
+          ...accountResult.account,
+          balance: accountResult.account.balance + addAmount
+        };
+        
+        await updateAccount(db, updatedAccount);
+      }
+    }
+
+    // Archive the expense
+    expense.state = "Inactive";
+    expense.updatedAt = new Date().toISOString();
+    await db.put(expense);
+
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
 }
 
 async function expenseSearch(db, searchTerm, projectId) {

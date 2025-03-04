@@ -107,20 +107,25 @@ async function updateSale(db, saleData) {
 // Mark a sale as inactive (soft delete)
 async function archiveSale(db, saleId) {
   try {
+    // Get the sale and client
     const sale = await db.get(saleId);
+    const client = await db.get(sale.clientId);
+
+    // Add back the converted price to client's balance
+    client.balance += Math.floor(sale.convertedPrice);
+
+    // Update the client's balance
+    await db.put(client);
+
+    // Archive the sale
     sale.state = 'Inactive';
+    sale.updatedAt = new Date().toISOString();
+    await db.put(sale);
     
-    const response = await db.put(sale);
-    return { 
-      success: true, 
-      sale: { _id: response.id, status: 'Inactive' } 
-    };
+    return { success: true };
   } catch (error) {
     console.error('Sale archival failed:', error);
-    return { 
-      success: false, 
-      error: error.message 
-    };
+    return { success: false, error: error.message };
   }
 }
 

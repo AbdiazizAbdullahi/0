@@ -89,16 +89,32 @@ function updateInvoice(db, invoiceData) {
 }
 
 // Archive an invoice
-function archiveInvoice(db, invoiceId) {
-  return db
-    .get(invoiceId)
-    .then((invoice) => {
-      // Update the state field to "Inactive"
-      invoice.state = "Inactive";
-      return db.put(invoice);
-    })
-    .then(() => ({ success: true }))
-    .catch((error) => ({ success: false, error: error.message }));
+async function archiveInvoice(db, invoiceId) {
+  try {
+    const invoice = await db.get(invoiceId);
+    const supplier = await db.get(invoice.supplierId);
+
+    // Convert amount if currencies are different
+    let deductAmount = invoice.amount;
+    if (supplier.currency === 'USD' && invoice.currency === 'KES') {
+      deductAmount = Math.floor(invoice.amount / invoice.rate);
+    } else if (supplier.currency === 'KES' && invoice.currency === 'USD') {
+      deductAmount = Math.floor(invoice.amount * invoice.rate);
+    }
+
+    // Reverse the supplier's balance
+    supplier.balance = (supplier.balance || 0) - deductAmount;
+    await db.put(supplier);
+
+    // Archive the invoice
+    invoice.state = "Inactive";
+    invoice.updatedAt = new Date().toISOString();
+    await db.put(invoice);
+
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
 }
 
 async function invoiceSearch(db, searchTerm, projectId) {
