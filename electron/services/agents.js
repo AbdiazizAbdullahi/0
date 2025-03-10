@@ -142,7 +142,8 @@ async function getAgentDetails(db, agentId) {
         type: 'sale',
         state: 'Active',
         agentId: agentId
-      }
+      },
+      limit: 10000
     });
 
     // Fetch commission transactions
@@ -154,7 +155,8 @@ async function getAgentDetails(db, agentId) {
           { from: agentId },
           { to: agentId }
         ]
-      }
+      },
+      limit: 10000
     });
 
     // Fetch client transactions for all sales

@@ -169,7 +169,8 @@ async function getSupplierDetails(db, supplierId) {
         type: 'invoice',
         state: 'Active',
         supplierId: supplierId
-      }
+      },
+      limit: 100000
     });
 
     // Fetch transactions
@@ -181,7 +182,8 @@ async function getSupplierDetails(db, supplierId) {
           { from: supplierId },
           { to: supplierId }
         ]
-      }
+      },
+      limit: 100000
     });
 
     // Prepare ledger entries

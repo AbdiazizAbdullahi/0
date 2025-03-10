@@ -143,7 +143,8 @@ async function getClientDetails(db, clientId) {
         type: 'sale',
         state: 'Active',
         clientId: clientId
-      }
+      },
+      limit: 10000
     });
 
     // Fetch transactions
@@ -155,7 +156,8 @@ async function getClientDetails(db, clientId) {
           { from: clientId },
           { to: clientId }
         ]
-      }
+      },
+      limit: 10000
     });
 
     // Prepare ledger entries
