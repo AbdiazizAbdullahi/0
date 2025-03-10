@@ -71,10 +71,61 @@ function archiveAccount(db, accountId) {
     .catch((error) => ({ success: false, error: error.message }));
 }
 
+// Calculate account totals
+function getAccountTotals(db, projectId) {
+  return db
+    .find({
+      selector: {
+        projectId: projectId,
+        $or: [
+          { type: "sale" },
+          { type: "expense" },
+          { type: "invoice" },
+          { type: "transaction" }
+        ]
+      },
+      limit: 100000
+    })
+    .then((result) => {
+      let totalCredit = 0;
+      let totalDebit = 0;
+
+      result.docs.forEach(doc => {
+        if (doc.type === "sale") {
+          totalCredit += Number(doc.price || 0);
+          totalCredit += Number(doc.commission || 0);
+        } else if (doc.type === "expense") {
+          totalCredit += Number(doc.amount || 0);
+        } else if (doc.type === "invoice") {
+          totalDebit += Number(doc.amount || 0);
+        } else if (doc.type === "transaction") {
+          if (doc.transType === "withdrawal") {
+            totalCredit += Number(doc.amount || 0);
+          } else if (doc.transType === "deposit") {
+            totalDebit += Number(doc.amount || 0);
+          }
+        }
+      });
+
+      const totalBalance = totalDebit - totalCredit;
+
+      return {
+        success: true,
+        totals: {
+          totalCredit,
+          totalDebit,
+          totalBalance
+        }
+      };
+    })
+    .catch((error) => ({ success: false, error: error.message }));
+}
+
 module.exports = {                                                    
   createAccount,
   getAllAccounts,
   getAccountById,
   updateAccount,
   archiveAccount,
+  getAccountTotals
 };

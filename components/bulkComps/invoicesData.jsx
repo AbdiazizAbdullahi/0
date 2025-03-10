@@ -132,8 +132,10 @@ export default function InvoicesData() {
           />
           {parsedData.length > 0 && (
             <>
-              <Button variant="destructive" onClick={clearData}>Clear</Button>
-              <Button onClick={handleSubmit}>Submit</Button>
+              <div className="flex space-x-72">
+                <Button variant="destructive" onClick={clearData}>Clear</Button>
+                <Button onClick={handleSubmit}>Submit</Button>
+              </div>
             </>
           )}
         </div>

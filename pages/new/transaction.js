@@ -14,7 +14,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Calendar } from "@/components/ui/calendar"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
-import { CalendarIcon, ChevronDown } from 'lucide-react'
+import { CalendarIcon, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -383,7 +383,7 @@ export default function NewTransaction() {
                         {date ? format(date, "PPP") : <span>Pick a date</span>}
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="w-auto">
+                    <DialogContent className="w-auto p-3 bg-white dark:bg-zinc-950 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-800">
                       <DialogHeader className="px-4 pt-4">
                         <DialogTitle>Calendar</DialogTitle>
                         <DialogDescription>Select the date of the transaction</DialogDescription>
@@ -396,7 +396,44 @@ export default function NewTransaction() {
                           setDateOpen(false);
                         }}
                         initialFocus
-                        className="p-4"
+                        className="rounded-md border border-zinc-200 dark:border-zinc-800 p-3"
+                        components={{
+                          IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors" />,
+                          IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors" />,
+                        }}
+                        classNames={{
+                          months: "space-y-4",
+                          month: "space-y-4",
+                          caption: "flex justify-center pt-1 relative items-center",
+                          caption_dropdowns: "flex justify-center gap-1 items-center px-8",
+                          dropdown: "appearance-none outline-none inline-flex items-center rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50 dark:hover:bg-zinc-800",
+                          dropdown_month: "mr-1",
+                          dropdown_year: "ml-1",
+                          head_row: "flex",
+                          head_cell: "text-zinc-500 rounded-md w-9 font-normal text-[0.8rem] dark:text-zinc-400",
+                          row: "flex w-full mt-2",
+                          cell: "text-center text-sm relative p-0 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md focus-within:relative focus-within:z-20 transition-colors",
+                          day: cn(
+                            "h-9 w-9 p-0 font-normal",
+                            "hover:bg-zinc-100 dark:hover:bg-zinc-800",
+                            "focus:outline-none focus:ring-2 focus:ring-primary"
+                          ),
+                          day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
+                          day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+                          day_today: "bg-accent text-accent-foreground",
+                          day_outside: "text-zinc-400 opacity-50 dark:text-zinc-500",
+                          day_disabled: "text-zinc-400 opacity-50 dark:text-zinc-500",
+                          day_hidden: "invisible",
+                          nav: "space-x-1 flex items-center",
+                          nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
+                          nav_button_previous: "absolute left-1",
+                          nav_button_next: "absolute right-1",
+                          table: "w-full border-collapse space-y-1",
+                        }}
+                        showOutsideDays
+                        captionLayout="dropdown-buttons"
+                        fromYear={2010}
+                        toYear={2050}
                       />
                     </DialogContent>
                   </Dialog>
@@ -464,6 +501,7 @@ export default function NewTransaction() {
                       <SelectItem value="account">Account</SelectItem>
                       <SelectItem value="client">Client</SelectItem>
                       <SelectItem value="supplier">Supplier</SelectItem>
+                      <SelectItem value="agent">Agent</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -551,7 +589,7 @@ export default function NewTransaction() {
                         {date ? format(date, "PPP") : <span>Pick a date</span>}
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="w-auto">
+                    <DialogContent className="w-auto p-3 bg-white dark:bg-zinc-950 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-800">
                       <DialogHeader className="px-4 pt-4">
                         <DialogTitle>Calendar</DialogTitle>
                         <DialogDescription>Select the date of the transaction</DialogDescription>
@@ -564,7 +602,44 @@ export default function NewTransaction() {
                           setDateOpen(false);
                         }}
                         initialFocus
-                        className="p-4"
+                        className="rounded-md border border-zinc-200 dark:border-zinc-800 p-3"
+                        components={{
+                          IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors" />,
+                          IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors" />,
+                        }}
+                        classNames={{
+                          months: "space-y-4",
+                          month: "space-y-4",
+                          caption: "flex justify-center pt-1 relative items-center",
+                          caption_dropdowns: "flex justify-center gap-1 items-center px-8",
+                          dropdown: "appearance-none outline-none inline-flex items-center rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50 dark:hover:bg-zinc-800",
+                          dropdown_month: "mr-1",
+                          dropdown_year: "ml-1",
+                          head_row: "flex",
+                          head_cell: "text-zinc-500 rounded-md w-9 font-normal text-[0.8rem] dark:text-zinc-400",
+                          row: "flex w-full mt-2",
+                          cell: "text-center text-sm relative p-0 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md focus-within:relative focus-within:z-20 transition-colors",
+                          day: cn(
+                            "h-9 w-9 p-0 font-normal",
+                            "hover:bg-zinc-100 dark:hover:bg-zinc-800",
+                            "focus:outline-none focus:ring-2 focus:ring-primary"
+                          ),
+                          day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
+                          day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+                          day_today: "bg-accent text-accent-foreground",
+                          day_outside: "text-zinc-400 opacity-50 dark:text-zinc-500",
+                          day_disabled: "text-zinc-400 opacity-50 dark:text-zinc-500",
+                          day_hidden: "invisible",
+                          nav: "space-x-1 flex items-center",
+                          nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
+                          nav_button_previous: "absolute left-1",
+                          nav_button_next: "absolute right-1",
+                          table: "w-full border-collapse space-y-1",
+                        }}
+                        showOutsideDays
+                        captionLayout="dropdown-buttons"
+                        fromYear={2010}
+                        toYear={2050}
                       />
                     </DialogContent>
                   </Dialog>

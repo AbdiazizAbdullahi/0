@@ -6,15 +6,9 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import Image from 'next/image';
 
-// Validation utilities
-// const validateEmail = (email) => {
-//   const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-//   return re.test(String(email).toLowerCase());
-// };
-
 const validatePhoneNumber = (phone) => {
   const digitCount = phone.replace(/\D/g, '').length;
-  return digitCount > 10;
+  return digitCount > 9;
 };
 
 const PROJECT_STATUSES = [

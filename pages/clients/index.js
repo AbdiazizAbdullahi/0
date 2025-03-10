@@ -13,6 +13,7 @@ import {
 
 export default function Clients() {
   const [isAddingClient, setIsAddingClient] = useState(false)
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   const handleCreateClient = async (clientData) => {
     try {
@@ -20,6 +21,7 @@ export default function Clients() {
       
       if (response.success) {
         setIsAddingClient(false)
+        setRefreshTrigger(prev => prev + 1) // Trigger refresh
         // You might want to add a toast or notification here
       } else {
         console.error('Client creation failed:', response.error)
@@ -58,7 +60,7 @@ export default function Clients() {
         </SheetContent>
       </Sheet>
 
-      <ClientList />
+      <ClientList refreshTrigger={refreshTrigger} />
     </div>
   )
 }

@@ -12,7 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
-import { CalendarIcon } from "lucide-react"
+import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react"
 import useProjectStore from "@/stores/projectStore"
 import { useToast } from "@/hooks/use-toast"
 
@@ -126,7 +126,10 @@ export default function NewSale() {
                   {formData.date ? format(new Date(formData.date), "PPP") : <span>Pick a date</span>}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
+              <PopoverContent 
+                className="w-auto p-3 bg-white dark:bg-zinc-950 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-800" 
+                align="start"
+              >
                 <Calendar
                   mode="single"
                   selected={formData.date ? new Date(formData.date) : undefined}
@@ -138,6 +141,44 @@ export default function NewSale() {
                     setDatePickerOpen(false)
                   }}
                   initialFocus
+                  className="rounded-md border border-zinc-200 dark:border-zinc-800 p-3"
+                  components={{
+                    IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors" />,
+                    IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors" />,
+                  }}
+                  classNames={{
+                    months: "space-y-4",
+                    month: "space-y-4",
+                    caption: "flex justify-center pt-1 relative items-center",
+                    caption_dropdowns: "flex justify-center gap-1 items-center px-8",
+                    dropdown: "appearance-none outline-none inline-flex items-center rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50 dark:hover:bg-zinc-800",
+                    dropdown_month: "mr-1",
+                    dropdown_year: "ml-1",
+                    head_row: "flex",
+                    head_cell: "text-zinc-500 rounded-md w-9 font-normal text-[0.8rem] dark:text-zinc-400",
+                    row: "flex w-full mt-2",
+                    cell: "text-center text-sm relative p-0 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md focus-within:relative focus-within:z-20 transition-colors",
+                    day: cn(
+                      "h-9 w-9 p-0 font-normal",
+                      "hover:bg-zinc-100 dark:hover:bg-zinc-800",
+                      "focus:outline-none focus:ring-2 focus:ring-primary"
+                    ),
+                    day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
+                    day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+                    day_today: "bg-accent text-accent-foreground",
+                    day_outside: "text-zinc-400 opacity-50 dark:text-zinc-500",
+                    day_disabled: "text-zinc-400 opacity-50 dark:text-zinc-500",
+                    day_hidden: "invisible",
+                    nav: "space-x-1 flex items-center",
+                    nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
+                    nav_button_previous: "absolute left-1",
+                    nav_button_next: "absolute right-1",
+                    table: "w-full border-collapse space-y-1",
+                  }}
+                  showOutsideDays
+                  captionLayout="dropdown-buttons"
+                  fromYear={2010}
+                  toYear={2050}
                 />
               </PopoverContent>
             </Popover>

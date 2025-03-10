@@ -7,6 +7,7 @@ import AgentModal from "@/components/agentsComp/AgentModal"
 
 export default function Agents() {
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -20,14 +21,14 @@ export default function Agents() {
         </div>
       </div>
 
-      <AgentList />
+      <AgentList refreshTrigger={refreshTrigger} />
 
       {isModalOpen && (
         <AgentModal 
           onClose={() => setIsModalOpen(false)}
           onUpdate={() => {
-            // Optionally refresh the list or show a success message
             setIsModalOpen(false)
+            setRefreshTrigger(prev => prev + 1) // Trigger refresh
           }}
         />
       )}

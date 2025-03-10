@@ -149,6 +149,8 @@ function setupIpcHandlers(ipcMain, db, mainWindow) {
                 return accounts.updateAccount(db, args[0]);
             case 'archiveAccount':
                 return accounts.archiveAccount(db, args[0]);
+            case 'getAccountTotals':
+                return accounts.getAccountTotals(db, args[0]);
 
             // Transactions
             case 'createTransaction':

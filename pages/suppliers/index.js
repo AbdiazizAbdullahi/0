@@ -14,6 +14,7 @@ import Link from 'next/link'
 
 export default function Suppliers() {
   const [isAddingSupplier, setIsAddingSupplier] = useState(false)
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   const handleCreateSupplier = async (supplierData) => {
     try {
@@ -21,6 +22,7 @@ export default function Suppliers() {
       
       if (response.success) {
         setIsAddingSupplier(false)
+        setRefreshTrigger(prev => prev + 1) // Trigger refresh
         // You might want to add a toast or notification here
       } else {
         console.error('Supplier creation failed:', response.error)
@@ -59,7 +61,7 @@ export default function Suppliers() {
         </SheetContent>
       </Sheet>
 
-      <SupplierList />
+      <SupplierList refreshTrigger={refreshTrigger} />
     </div>
   )
 }

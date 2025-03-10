@@ -145,10 +145,16 @@ export default function SpecificProject() {
 
       <div className="flex space-x-4">
         <Tabs defaultValue="clients" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="clients">Clients</TabsTrigger>
-            <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
-            <TabsTrigger value="agents">Agents</TabsTrigger>
+          <TabsList className="grid w-full h-12 grid-cols-3 bg-blue-100 p-1">
+            <TabsTrigger value="clients" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-md font-bold">
+              Clients
+            </TabsTrigger>
+            <TabsTrigger value="suppliers" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-md font-bold">
+              Suppliers
+            </TabsTrigger>
+            <TabsTrigger value="agents" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-md font-bold">
+              Agents
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="clients">
             <ClientList />

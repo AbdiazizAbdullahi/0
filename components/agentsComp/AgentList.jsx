@@ -19,7 +19,7 @@ import useProjectStore from '@/stores/projectStore'
 import { useRouter } from 'next/router'
 import { formatCurrency } from '@/lib/utils'
 
-export default function AgentList() {
+export default function AgentList({ refreshTrigger }) {
   const [agents, setAgents] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [rowsPerPage, setRowsPerPage] = useState(5)
@@ -40,7 +40,7 @@ export default function AgentList() {
 
   useEffect(() => {
     fetchAgents()
-  }, [projectId])
+  }, [projectId, refreshTrigger])
 
   const fetchAgents = async () => {
     try {
@@ -89,8 +89,7 @@ export default function AgentList() {
   }
 
   const filteredAgents = agents.filter(agent => 
-    agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    agent.phoneNumber.toLowerCase().includes(searchTerm.toLowerCase())
+    agent.name.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const paginatedAgents = filteredAgents.slice(

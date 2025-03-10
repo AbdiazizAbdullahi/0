@@ -19,7 +19,7 @@ import useProjectStore from '@/stores/projectStore'
 import { useRouter } from 'next/router'
 import { formatCurrency } from '@/lib/utils'
 
-export default function ClientList() {
+export default function ClientList({ refreshTrigger }) {
   const [clients, setClients] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [rowsPerPage, setRowsPerPage] = useState(5)
@@ -40,7 +40,7 @@ export default function ClientList() {
 
   useEffect(() => {
     fetchClients()
-  }, [projectId])
+  }, [projectId, refreshTrigger])
 
   const fetchClients = async () => {
     try {

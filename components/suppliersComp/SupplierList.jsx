@@ -20,7 +20,7 @@ import useProjectStore from '@/stores/projectStore'
 import { useRouter } from 'next/router'
 import { formatCurrency } from '@/lib/utils'
 
-export default function SupplierList() {
+export default function SupplierList({ refreshTrigger }) {
   const [suppliers, setSuppliers] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [rowsPerPage, setRowsPerPage] = useState(5)
@@ -41,7 +41,7 @@ export default function SupplierList() {
 
   useEffect(() => {
     fetchSuppliers()
-  }, [projectId])
+  }, [projectId, refreshTrigger])
 
   const fetchSuppliers = async () => {
     try {
@@ -92,8 +92,7 @@ export default function SupplierList() {
   }
 
   const filteredSuppliers = suppliers.filter(supplier => 
-    supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    supplier.phoneNumber.toLowerCase().includes(searchTerm.toLowerCase())
+    supplier.name.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const paginatedSuppliers = filteredSuppliers.slice(
