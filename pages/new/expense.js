@@ -11,6 +11,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
+import { formatPesa } from "@/lib/utils" // Import formatPesa function
 import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react"
 import useProjectStore from "@/stores/projectStore"
 import { useToast } from "@/hooks/use-toast"
@@ -223,9 +224,12 @@ export default function NewExpense() {
                 <Input
                   id="amount"
                   name="amount"
-                  type="number"
-                  value={formData.amount}
-                  onChange={handleChange}
+                  type="text"
+                  value={formatPesa(formData.amount)}
+                  onChange={(e) => {
+                    const numericValue = e.target.value.replace(/[^0-9]/g, '');
+                    handleChange({ target: { name: 'amount', value: numericValue } });
+                  }}
                   placeholder="Enter amount"
                   required
                 />
@@ -319,4 +323,3 @@ export default function NewExpense() {
     </Card>
   )
 }
-

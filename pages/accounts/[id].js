@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
-export default function AgentDetail() {
+export default function AccountDetail() {
   const params = useParams()
   const id = params?.id
 
@@ -37,11 +37,11 @@ export default function AgentDetail() {
       setLoading(true)
       setError(null)
       try {
-        const response = await window.electronAPI.mainOperation("getAgentDetails", id)
+        const response = await window.electronAPI.mainOperation("getAccountDetails", id)
         if (response.success) {
           setData(response.data)
         } else {
-          throw new Error(response.error || "Failed to fetch agent details")
+          throw new Error(response.error || "Failed to fetch account details")
         }
       } catch (err) {
         setError(err.message)
@@ -59,8 +59,6 @@ export default function AgentDetail() {
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "KES",
       minimumFractionDigits: 0,
     }).format(amount)
   }
@@ -111,7 +109,7 @@ export default function AgentDetail() {
     const link = document.createElement('a')
     const url = URL.createObjectURL(blob)
     link.href = url
-    link.setAttribute('download', `agent_${id}_ledger.csv`)
+    link.setAttribute('download', `account_${id}_ledger.csv`)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -119,9 +117,9 @@ export default function AgentDetail() {
 
   const exportToPDF = async () => {
     try {
-      const response = await window.electronAPI.mainOperation("agentPDF", {
+      const response = await window.electronAPI.mainOperation("accountPDF", {
         data: filteredData,
-        agent: data.info.name,
+        account: data.info.name,
         totals: data.metrics
       })
       
@@ -213,7 +211,7 @@ export default function AgentDetail() {
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
           <div>
             <CardTitle className="text-2xl font-bold">Transactions Ledger</CardTitle>
-            <p className="text-sm text-muted-foreground">View all sales for this project</p>
+            <p className="text-sm text-muted-foreground">View all transactions for this account</p>
           </div>
           <div className="flex items-center space-x-4">
             <Input 
@@ -267,10 +265,10 @@ export default function AgentDetail() {
                       <TableCell className="font-medium">{formatDate(entry.date)}</TableCell>
                       <TableCell>{entry.description}</TableCell>
                       <TableCell className="text-right tabular-nums">
-                        {entry.debit ? formatCurrency(entry.debit) : "-"}
+                        {entry.debit ? `${entry.currency} ${formatCurrency(entry.debit)}` : "-"}
                       </TableCell>
                       <TableCell className="text-right tabular-nums">
-                        {entry.credit ? formatCurrency(entry.credit) : "-"}
+                        {entry.credit ? `${entry.currency} ${formatCurrency(entry.credit)}` : "-"}
                       </TableCell>
                       <TableCell className="text-right font-medium tabular-nums">
                         {formatCurrency(Math.abs(entry.balance))}

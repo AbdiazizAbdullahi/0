@@ -128,7 +128,7 @@ export default function SupplierList({ refreshTrigger }) {
             {paginatedSuppliers.map((supplier) => (
               <tr key={supplier._id} className="border-b">
                 <td className="p-4">{supplier.name}</td>
-                <td className="p-4">{supplier.currency} {formatCurrency(supplier.balance)}</td>
+                <td className={`p-4 ${supplier.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>{supplier.currency} {formatCurrency(Math.abs(supplier.balance))}</td>
                 <td className="p-4 flex gap-2">
                   <Button 
                     variant="secondary" 

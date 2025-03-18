@@ -17,6 +17,7 @@ import { format } from "date-fns"
 import { CalendarIcon, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { formatPesa } from '@/lib/utils';
 
 export default function NewTransaction() {
   const router = useRouter();
@@ -350,9 +351,12 @@ export default function NewTransaction() {
                   <Input
                     id="deposit-amount"
                     placeholder="Enter amount"
-                    type="number"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
+                    type="text"
+                    value={formatPesa(amount)}
+                    onChange={(e) => {
+                      const numericValue = e.target.value.replace(/[^0-9]/g, '');
+                      setAmount(numericValue);
+                    }}
                     required
                   />
                 </div>
@@ -540,10 +544,14 @@ export default function NewTransaction() {
                   <Label htmlFor="deposit-amount">Amount</Label>
                   <Input
                     id="deposit-amount"
+                    name="amount"
+                    type="text"
+                    value={formatPesa(amount)}
+                    onChange={(e) => {
+                      const numericValue = e.target.value.replace(/[^0-9]/g, '');
+                      setAmount(numericValue);
+                    }}
                     placeholder="Enter amount"
-                    type="number"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
                     required
                   />
                 </div>

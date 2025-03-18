@@ -15,6 +15,7 @@ import { format } from "date-fns"
 import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react"
 import useProjectStore from "@/stores/projectStore"
 import { useToast } from "@/hooks/use-toast"
+import { formatPesa } from "@/lib/utils"
 
 export default function NewSale() {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -218,9 +219,12 @@ export default function NewSale() {
               <Input
                 id="price"
                 name="price"
-                type="number"
-                value={formData.price}
-                onChange={handleChange}
+                type="text"
+                value={formatPesa(formData.price)}
+                onChange={(e) => {
+                  const numericValue = e.target.value.replace(/[^0-9]/g, '');
+                  handleChange({ target: { name: 'price', value: numericValue } });
+                }}
                 placeholder="Enter price"
                 required
               />
@@ -270,9 +274,12 @@ export default function NewSale() {
               <Input
                 id="commission"
                 name="commission"
-                type="number"
-                value={formData.commission}
-                onChange={handleChange}
+                type="text"
+                value={formatPesa(formData.commission)}
+                onChange={(e) => {
+                  const numericValue = e.target.value.replace(/[^0-9]/g, '');
+                  handleChange({ target: { name: 'commission', value: numericValue } });
+                }}
                 placeholder="Enter commission"
               />
             </div>

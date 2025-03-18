@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from '@/hooks/use-toast';
 
 export default function DeleteAccount({ accountId, accountName, fetchAccounts }) {
   const [isDeleting, setIsDeleting] = useState(false);
@@ -10,7 +10,7 @@ export default function DeleteAccount({ accountId, accountName, fetchAccounts })
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      const result = await window.electronAPI.mainOperation('deleteAccount', { accountId });
+      const result = await window.electronAPI.mainOperation('archiveAccount', accountId );
 
       if (result.success) {
         toast({
@@ -38,11 +38,11 @@ export default function DeleteAccount({ accountId, accountName, fetchAccounts })
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="destructive" size="sm">Delete</Button>
+        <Button variant="destructive" size="sm">Archive</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Delete Account</DialogTitle>
+          <DialogTitle>Archive Account</DialogTitle>
           <DialogDescription>
             Are you sure you want to delete the account {accountName}? 
             This action cannot be undone.
@@ -55,7 +55,7 @@ export default function DeleteAccount({ accountId, accountName, fetchAccounts })
             onClick={handleDelete} 
             disabled={isDeleting}
           >
-            {isDeleting ? 'Deleting...' : 'Confirm Delete'}
+            {isDeleting ? 'Deleting...' : 'Confirm Archive'}
           </Button>
         </div>
       </DialogContent>

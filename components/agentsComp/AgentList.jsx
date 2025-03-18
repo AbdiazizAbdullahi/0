@@ -125,7 +125,7 @@ export default function AgentList({ refreshTrigger }) {
             {paginatedAgents.map((agent) => (
               <tr key={agent._id} className="border-b">
                 <td className="p-4">{agent.name}</td>
-                <td className="p-4">{agent.currency} {formatCurrency(agent.balance)}</td>
+                <td className={`p-4 ${agent.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>{agent.currency} {formatCurrency(Math.abs(agent.balance))}</td>
                 <td className="p-4 flex gap-2">
                   <Button 
                     variant="secondary" 

@@ -10,6 +10,7 @@ const transactions = require('./services/transactions')
 const expenses = require('./services/expenses')
 const invoices = require('./services/invoices')
 const auth = require('./services/login')
+const report = require('./services/report')
 
 function setupIpcHandlers(ipcMain, db, mainWindow) {
     ipcMain.handle('search-cs', async (event, searchTerm, type, projectId) => {
@@ -151,6 +152,10 @@ function setupIpcHandlers(ipcMain, db, mainWindow) {
                 return accounts.archiveAccount(db, args[0]);
             case 'getAccountTotals':
                 return accounts.getAccountTotals(db, args[0]);
+            case 'getAccountDetails':
+                return accounts.getAccountDetails(db, args[0]);
+            case 'accountPDF':
+                return accounts.accountPDF(args[0]);
 
             // Transactions
             case 'createTransaction':
@@ -163,6 +168,8 @@ function setupIpcHandlers(ipcMain, db, mainWindow) {
                 return transactions.updateTransaction(db, args[0]);
             case 'archiveTransaction':
                 return transactions.archiveTransaction(db, args[0]);
+            case 'filterTransactions':
+                return await transactions.filterTransactions(db, args[0], args[1]);
 
             // Expenses
             case 'createExpense':
@@ -191,6 +198,10 @@ function setupIpcHandlers(ipcMain, db, mainWindow) {
                 return invoices.updateInvoice(db, args[0]);
             case 'archiveInvoice':
                 return invoices.archiveInvoice(db, args[0]);
+
+            // Report
+            case 'generateIncomeStatement':
+                return report.generateIncomeStatement(db, args[0]);
 
             case 'seedAdminIfNeeded':
                 return auth.seedAdminIfNeeded(db);

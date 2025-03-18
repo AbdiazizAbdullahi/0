@@ -193,9 +193,9 @@ export default function ClientDetail() {
           <FinancialCard
             title="Total Credit"
             amount={data?.metrics.totalCredit}
-            icon={<DollarSign className="h-6 w-6 text-orange-500" />}
+            icon={<DollarSign className="h-6 w-6 text-blue-500" />}
             loading={loading}
-            color="orange"
+            color="blue"
           />
           <FinancialCard
             title="Balance"
@@ -329,7 +329,7 @@ function FinancialCard({ title, amount, icon, loading, color }) {
   }
 
   return (
-    <Card className={`bg-${color}-50 hover:bg-${color}-100 transition-colors`}>
+    <Card className={`bg-${color}-100 hover:bg-${color}-100 transition-colors`}>
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div>

@@ -68,20 +68,25 @@ export default function SpecificProject() {
         </CardHeader>
         <CardContent >
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {accounts.map((account) => (
-              <Card key={account._id} className="inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-background z-0">
-                <CardContent className="p-4">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <BanknoteIcon className="h-5 w-5 text-primary" />
-                    <h3 className="font-semibold">{account.name}</h3>
-                  </div>
-                  <div className="flex items-center space-x-2 text-lg font-bold">
-                    <DollarSign className="h-5 w-5 text-green-500" />
-                    <span>{account.currency} {formatCurrency(account.balance)}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            {accounts.map((account, index) => {
+              const colors = ['from-blue-400', 'from-purple-400', 'from-pink-400', 'from-indigo-400', 'from-teal-400', 'from-green-400', 'from-yellow-400', 'from-red-400', 'from-orange-400', 'from-cyan-400'];
+              const color = colors[index % colors.length];
+              const balanceColor = account.balance > 0 ? 'text-green-500' : 'text-red-500';
+              return (
+                <Card key={account._id} className={`inset-0 bg-gradient-to-br ${color} to-background z-0`} onClick={() => router.push(`/accounts/${account._id}`)}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <BanknoteIcon className="h-5 w-5 text-primary" />
+                      <h3 className="font-semibold">{account.name}</h3>
+                    </div>
+                    <div className="flex bg-gray-100 rounded-md border border-cyan-500 items-center space-x-2 text-lg font-bold">
+                      <DollarSign className={`h-5 w-5 ${balanceColor}`} />
+                      <span className={balanceColor}>{account.currency} {formatCurrency(Math.abs(account.balance))}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </CardContent>
       </Card>
@@ -92,53 +97,44 @@ export default function SpecificProject() {
             <CardTitle>Expenses Overview</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <Card className="inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-background z-0">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                {"KES"} {formatCurrency(expenseStat.totalExpenses || 0)}
-                </div>
-                <p className="text-xs text-muted-foreground">Overall spending</p>
-              </CardContent>
-            </Card>
-            <Card className="inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-background z-0">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Last Month Expenses</CardTitle>
-                <TrendingDown className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {"KES"} {formatCurrency(expenseStat.lastMonthExpenses || 0)}
-                </div>
-                <p className="text-xs text-muted-foreground">Previous month total</p>
-              </CardContent>
-            </Card>
-            <Card className="inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-background z-0">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Latest Expense</CardTitle>
-                <CreditCard className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {expenseStat.latestExpense ? (
-                    <>
-                      <div className="text-xl font-bold">
-                        {expenseStat.latestExpense.currency} {formatCurrency(expenseStat.latestExpense.amount)}
-                      </div>
-                      <div className="text-sm text-muted-foreground truncate">
-                        {expenseStat.latestExpense.description}
-                      </div>
-                    </>
-                  ) : (
-                    'No expenses yet'
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground">Most recent transaction</p>
-              </CardContent>
-            </Card>
+            {['Total Expenses', 'Last Month Expenses', 'Latest Expense'].map((title, index) => {
+              const colors = ['from-indigo-400', 'from-teal-400', 'from-green-400', 'from-yellow-400', 'from-red-400', 'from-orange-400', 'from-cyan-400'];
+              const color = colors[index % colors.length];
+              return (
+                <Card key={title} className={`inset-0 bg-gradient-to-br ${color} to-background z-0`}>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">{title}</CardTitle>
+                    {title === 'Total Expenses' && <DollarSign className="h-4 w-4 text-muted-foreground" />}
+                    {title === 'Last Month Expenses' && <TrendingDown className="h-4 w-4 text-muted-foreground" />}
+                    {title === 'Latest Expense' && <CreditCard className="h-4 w-4 text-muted-foreground" />}
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      {title === 'Latest Expense' && expenseStat.latestExpense ? (
+                        <>
+                          <div className="text-xl font-bold">
+                            {expenseStat.latestExpense.currency} {formatCurrency(expenseStat.latestExpense.amount)}
+                          </div>
+                          <div className="text-sm text-muted-foreground truncate">
+                            {expenseStat.latestExpense.description}
+                          </div>
+                        </>
+                      ) : (
+                        `KES ${formatCurrency(
+                          title === 'Total Expenses' ? expenseStat.totalExpenses || 0 :
+                          title === 'Last Month Expenses' ? expenseStat.lastMonthExpenses || 0 : 0
+                        )}`
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {title === 'Total Expenses' && 'Overall spending'}
+                      {title === 'Last Month Expenses' && 'Previous month total'}
+                      {title === 'Latest Expense' && 'Most recent transaction'}
+                    </p>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </CardContent>
         </Card>
       )}

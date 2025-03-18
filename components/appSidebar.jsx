@@ -12,6 +12,7 @@ import {
   BriefcaseBusiness,
   ChevronRight,
   Wallet,
+  ChartLine
 } from "lucide-react"
 import {
   Sidebar,
@@ -41,6 +42,7 @@ const AppSidebar = () => {
     { label: "Invoices", icon: BookCheck, pageLink: "/invoices" },
     { label: "Transactions", icon: Euro, pageLink: "/transactions" },
     { label: "Expenses", icon: Gauge, pageLink: "/expenses" },
+    { label: "Report", icon: ChartLine, pageLink: "/report" },
   ]
 
   const secLinks = [

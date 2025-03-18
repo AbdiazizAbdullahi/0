@@ -15,6 +15,7 @@ import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react"
 import { DayPicker } from "react-day-picker"
 import useProjectStore from "@/stores/projectStore"
 import { useToast } from "@/hooks/use-toast"
+import { formatPesa } from "@/lib/utils"
 
 export default function NewInvoice() {
   const router = useRouter()
@@ -236,9 +237,12 @@ export default function NewInvoice() {
               <Input
                 id="price"
                 name="price"
-                type="number"
-                value={formData.price}
-                onChange={handleChange}
+                type="text"
+                value={formatPesa(formData.price)}
+                onChange={(e) => {
+                  const numericValue = e.target.value.replace(/[^0-9]/g, '');
+                  handleChange({ target: { name: 'price', value: numericValue } });
+                }}
                 placeholder="Enter price"
               />
             </div>
@@ -280,9 +284,12 @@ export default function NewInvoice() {
             <Input
               id="amount"
               name="amount"
-              type="number"
-              value={formData.amount}
-              onChange={handleChange}
+              type="text"
+              value={formatPesa(formData.amount)}
+              onChange={(e) => {
+                const numericValue = e.target.value.replace(/[^0-9]/g, '');
+                handleChange({ target: { name: 'amount', value: numericValue } });
+              }}
               placeholder="Enter total amount"
               required
             />

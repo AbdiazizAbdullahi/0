@@ -3,18 +3,24 @@ import useProjectStore from '@/stores/projectStore'
 import ReusableTable from '@/components/commonComp/reusableTable'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { EllipsisVertical, Loader2 } from 'lucide-react'
+import { EllipsisVertical, Loader2, FilterIcon } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Slider } from '@/components/ui/slider'
+import { Label } from '@/components/ui/label'
 import TransactionDetails from '@/components/transactionsComp/transactionDetail'
 import ConfirmDialog from '@/components/commonComp/confirmDialog'
+import { formatPesa } from '@/lib/utils'
 
 export default function Transactions() {
   const [transactions, setTransactions] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [id, setId] = useState(null)
+  const [accounts, setAccounts] = useState([])
   const project = useProjectStore(state => state.project)
   const [selectedTransaction, setSelectedTransaction] = useState(null)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
@@ -22,6 +28,29 @@ export default function Transactions() {
     isOpen: false,
     itemToDelete: null
   })
+  const [filters, setFilters] = useState({
+    dateRange: '',
+    accountName: '',
+    transType: '',
+    amountRange: [, ],
+    currency: ''
+  })
+
+  const TRANSACTION_TYPES = [
+    { id: 'deposit', label: 'Deposit' },
+    { id: 'withdraw', label: 'Withdrawal' }
+  ]
+
+  const CURRENCIES = [
+    { id: 'KES', label: 'KES' },
+    { id: 'USD', label: 'USD' }
+  ]
+
+  const DATE_RANGES = [
+    { id: 'today', label: 'Today' },
+    { id: 'past-week', label: 'Past Week' },
+    { id: 'past-month', label: 'Past Month' }
+  ]
 
   useEffect(() => {
     if (project?._id) {
@@ -32,6 +61,7 @@ export default function Transactions() {
   useEffect(() => {
     if (id) {
       fetchTransactions()
+      fetchAccounts()
     }
   }, [id])
 
@@ -90,6 +120,17 @@ export default function Transactions() {
       )
     },
   ]
+
+  const fetchAccounts = async () => {
+    try {
+      const result = await window.electronAPI.mainOperation("getAllAccounts", id)
+      if (result.success) {
+        setAccounts(result.accounts || [])
+      }
+    } catch (error) {
+      console.error('Error fetching accounts:', error)
+    }
+  }
 
   const fetchTransactions = async () => {
     setLoading(true)
@@ -151,6 +192,58 @@ export default function Transactions() {
     }
   }
 
+  const applyFilters = async () => {
+    try {
+      let startDate = null;
+      let endDate = new Date();
+
+      if (filters.dateRange) {
+        switch (filters.dateRange) {
+          case 'today':
+            startDate = new Date();
+            startDate.setHours(0, 0, 0, 0);
+            break;
+          case 'past-week':
+            startDate = new Date();
+            startDate.setDate(startDate.getDate() - 7);
+            break;
+          case 'past-month':
+            startDate = new Date();
+            startDate.setMonth(startDate.getMonth() - 1);
+            break;
+        }
+      }
+
+      const filterPayload = {
+        startDate: startDate ? startDate.toISOString() : null,
+        endDate: endDate.toISOString(),
+        accountName: filters.accountName,
+        transType: filters.transType,
+        minAmount: filters.amountRange[0],
+        maxAmount: filters.amountRange[1],
+        currency: filters.currency
+      };
+
+      setLoading(true);
+      const response = await window.electronAPI.mainOperation('filterTransactions', {
+        projectId: id,
+        filterData: filterPayload
+      });
+      
+      if (response.success) {
+        setTransactions(response.transactions);
+        setIsSheetOpen(false);
+      } else {
+        setError(response.error || 'Failed to filter transactions');
+      }
+    } catch (error) {
+      console.error('Error applying filters:', error);
+      setError('Error filtering transactions');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <Card className="">
@@ -159,11 +252,123 @@ export default function Transactions() {
             <CardTitle>Transactions</CardTitle>
             <CardDescription>View all transactions for this project</CardDescription>
           </div>
-          <div>
+          <div className="flex gap-2">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline">
+                  <FilterIcon className="mr-2 h-4 w-4" />
+                  Filter
+                </Button>
+              </SheetTrigger>
+              <SheetContent>
+                <SheetHeader>
+                  <SheetTitle>Filter Transactions</SheetTitle>
+                </SheetHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label>Date Range</Label>
+                    <Select 
+                      value={filters.dateRange}
+                      onValueChange={(value) => setFilters({...filters, dateRange: value})}
+                    >
+                      <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Select date range" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {DATE_RANGES.map(range => (
+                          <SelectItem key={range.id} value={range.id}>{range.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label>Account</Label>
+                    <Select
+                      value={filters.accountName}
+                      onValueChange={(value) => setFilters({...filters, accountName: value})}
+                    >
+                      <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Select account" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {accounts.map(account => (
+                          <SelectItem key={account._id} value={account.name}>{account.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label>Type</Label>
+                    <Select 
+                      value={filters.transType}
+                      onValueChange={(value) => setFilters({...filters, transType: value})}
+                    >
+                      <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Select transaction type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {TRANSACTION_TYPES.map(type => (
+                          <SelectItem key={type.id} value={type.id}>{type.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label>Currency</Label>
+                    <Select 
+                      value={filters.currency}
+                      onValueChange={(value) => setFilters({...filters, currency: value})}
+                    >
+                      <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Select currency" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CURRENCIES.map(currency => (
+                          <SelectItem key={currency.id} value={currency.id}>{currency.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label>Amount Range</Label>
+                    <div className="col-span-3 flex gap-2">
+                      <Input
+                        type="text"
+                        placeholder="Min amount"
+                        value={filters.amountRange[0] ? filters.amountRange[0].toLocaleString() : ''}
+                        onChange={(e) => setFilters({...filters, amountRange: [Number(e.target.value.replace(/[^\d.-]/g, '')), filters.amountRange[1]]})}
+                      />
+                      <Input
+                        type="text"
+                        placeholder="Max amount"
+                        value={filters.amountRange[1] ? filters.amountRange[1].toLocaleString() : ''}
+                        onChange={(e) => setFilters({...filters, amountRange: [filters.amountRange[0], Number(e.target.value.replace(/[^\d.-]/g, ''))]})}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {setFilters({
+                        dateRange: '',
+                        accountName: '',
+                        transType: '',
+                        amountRange: [0, 0],
+                        currency: ''
+                      })
+                      fetchTransactions()
+                      }}
+                    >
+                      Clear
+                    </Button>
+                    <Button onClick={applyFilters}>Apply</Button>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
             <Input
               type="text"
               placeholder="Search transactions"
-              className=""
               onChange={(e) => performSearch(e.target.value)}
             />
           </div>

@@ -125,7 +125,7 @@ export default function ClientList({ refreshTrigger }) {
             {paginatedClients.map((client) => (
               <tr key={client._id} className="border-b">
                 <td className="p-4">{client.name}</td>
-                <td className="p-4">{client.currency} {formatCurrency(client.balance)}</td>
+                <td className={`p-4 ${client.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>{client.currency} {formatCurrency(Math.abs(client.balance))}</td>
                 <td className="p-4 flex gap-2">
                   <Button 
                     variant="secondary" 

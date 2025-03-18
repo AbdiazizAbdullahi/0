@@ -317,6 +317,59 @@ async function transSearch(db, searchTerm, projectId) {
   }
 }
 
+async function filterTransactions(db, { projectId, filterData }) {
+  try {
+    const selector = {
+      type: "transaction",
+      state: "Active",
+      projectId: projectId
+    };
+
+    // Add date range filter
+    if (filterData.startDate && filterData.endDate) {
+      selector.date = {
+        $gte: filterData.startDate,
+        $lte: filterData.endDate
+      };
+    }
+
+    // Add account name filter
+    if (filterData.accountName) {
+      selector.$or = [
+        { fromName: filterData.accountName },
+        { toName: filterData.accountName }
+      ];
+    }
+
+    // Add transaction type filter
+    if (filterData.transType) {
+      selector.transType = filterData.transType;
+    }
+
+    // Add currency filter
+    if (filterData.currency) {
+      selector.currency = filterData.currency;
+    }
+
+    // Add amount range filter
+    if (filterData.minAmount && filterData.maxAmount) {
+      selector.amount = {
+        $gte: filterData.minAmount,
+        $lte: filterData.maxAmount
+      };
+    }
+
+    const result = await db.find({
+      selector,
+      limit: 100000
+    });
+
+    return { success: true, transactions: result.docs };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}
+
 module.exports = {
   createTransaction,
   getAllTransactions,
@@ -325,4 +378,5 @@ module.exports = {
   archiveTransaction,
   searchCS,
   transSearch,
+  filterTransactions
 };
