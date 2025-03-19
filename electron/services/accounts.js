@@ -144,7 +144,8 @@ async function getAccountDetails(db, accountId) {
           { from: accountId },
           { to: accountId }
         ]
-      }
+      },
+      limit: 100000
     });
 
     // Prepare ledger entries from transactions

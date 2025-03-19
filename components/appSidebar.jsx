@@ -38,11 +38,11 @@ const AppSidebar = () => {
 
   const links = [
     { label: "Dashboard", icon: LayoutDashboard, pageLink: "/projects/specific" },
+    { label: "Report", icon: ChartLine, pageLink: "/report" },
     { label: "Sales", icon: Tags, pageLink: "/sales" },
     { label: "Invoices", icon: BookCheck, pageLink: "/invoices" },
     { label: "Transactions", icon: Euro, pageLink: "/transactions" },
     { label: "Expenses", icon: Gauge, pageLink: "/expenses" },
-    { label: "Report", icon: ChartLine, pageLink: "/report" },
   ]
 
   const secLinks = [

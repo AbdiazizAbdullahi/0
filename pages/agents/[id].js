@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { formatCurrency } from "@/lib/utils"
 
 export default function AgentDetail() {
   const params = useParams()
@@ -55,14 +56,6 @@ export default function AgentDetail() {
 
   const formatDate = (dateString) => {
     return format(new Date(dateString), "MMM dd, yyyy")
-  }
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "KES",
-      minimumFractionDigits: 0,
-    }).format(amount)
   }
 
   const totalPages = data?.ledger ? Math.ceil(data.ledger.length / parseInt(rowsPerPage)) : 0
@@ -256,7 +249,7 @@ export default function AgentDetail() {
                     <TableHead className="font-medium">Description</TableHead>
                     <TableHead className="text-right font-medium">Debit</TableHead>
                     <TableHead className="text-right font-medium">Credit</TableHead>
-                    <TableHead className="text-right font-medium">Balance</TableHead>
+                    <TableHead className="text-right font-medium">Balance (KES)</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -267,10 +260,10 @@ export default function AgentDetail() {
                       <TableCell className="font-medium">{formatDate(entry.date)}</TableCell>
                       <TableCell>{entry.description}</TableCell>
                       <TableCell className="text-right tabular-nums">
-                        {entry.debit ? formatCurrency(entry.debit) : "-"}
+                        {entry.debit ? (entry.currency + " " + formatCurrency(entry.debit)) : "-"}
                       </TableCell>
                       <TableCell className="text-right tabular-nums">
-                        {entry.credit ? formatCurrency(entry.credit) : "-"}
+                        {entry.credit ? (entry.currency + " " + formatCurrency(entry.credit)) : "-"}
                       </TableCell>
                       <TableCell className="text-right font-medium tabular-nums">
                         {formatCurrency(Math.abs(entry.balance))}

@@ -79,7 +79,7 @@ export default function Report() {
                 <div className="space-y-1">
                   <p className="text-sm text-blue-700">Total Debit</p>
                   <h3 className="text-2xl font-bold text-blue-900">KES {formatCurrency(totals?.totalDebit || 0)}</h3>
-                  <p className="text-xs text-blue-700">Outgoing funds</p>
+                  <p className="text-xs text-blue-700">Incoming funds</p>
                 </div>
                 <div className="bg-blue-200 p-2 rounded-md">
                   <DollarSign className="h-5 w-5 text-blue-700" />
@@ -97,7 +97,7 @@ export default function Report() {
                   <h3 className="text-2xl font-bold text-emerald-900">
                     KES {formatCurrency(totals?.totalCredit || 0)}
                   </h3>
-                  <p className="text-xs text-emerald-700">Incoming funds</p>
+                  <p className="text-xs text-emerald-700">Outgoing funds</p>
                 </div>
                 <div className="bg-emerald-200 p-2 rounded-md">
                   <CreditCard className="h-5 w-5 text-emerald-700" />

@@ -6,7 +6,8 @@ async function generateIncomeStatement(db, projectId) {
         type: 'sale',
         state: 'Active',
         projectId: projectId
-      }
+      },
+      limit: 100000
     });
 
     // Fetch all supplier invoices
@@ -15,7 +16,8 @@ async function generateIncomeStatement(db, projectId) {
         type: 'invoice',
         state: 'Active',
         projectId: projectId
-      }
+      },
+      limit: 100000
     });
 
     // Fetch all expenses
@@ -24,7 +26,8 @@ async function generateIncomeStatement(db, projectId) {
         type: 'expense',
         state: 'Active',
         projectId: projectId
-      }
+      },
+      limit: 100000
     });
 
     // Calculate totals
@@ -34,18 +37,21 @@ async function generateIncomeStatement(db, projectId) {
 
     // Add sales revenue to total debit
     salesResult.docs.forEach(sale => {
-      totalDebit += sale.price || 0;
-      cost += sale.commission || 0; // Add commissions to cost
+      const price = sale.currency === 'USD' ? Number(sale.price) * Number(sale.rate) : Number(sale.price);
+      totalDebit += price || 0;
+      cost += Number(sale.commission) || 0; // Add commissions to cost
     });
 
     // Add supplier invoices to cost
     invoicesResult.docs.forEach(invoice => {
-      cost += invoice.amount || 0;
+      const amount = invoice.currency === 'USD' ? Number(invoice.amount) * Number(invoice.rate) : Number(invoice.amount);
+      cost += amount || 0;
     });
 
     // Add expenses
     expensesResult.docs.forEach(expense => {
-      totalExpenses += expense.amount || 0;
+      const amount = expense.currency === 'USD' ? Number(expense.amount) * Number(expense.rate) : Number(expense.amount);
+      totalExpenses += amount || 0;
     });
 
     const totalCredit = cost + totalExpenses;
