@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,7 @@ export default function Report() {
   const [projectId, setProjectId] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
   const [totals, setTotals] = useState({
     totalDebit: 0,
     cost: 0,
@@ -112,7 +114,7 @@ export default function Report() {
               <div className="flex justify-between items-start">
                 <div className="space-y-1">
                   <p className={`text-sm text-${totals?.balance >= 0 ? "green" : "red"}-600`}>Balance</p>
-                  <h3 className={`text-2xl text-${totals?.balance >= 0 ? "green" : "red"}-600 font-bold`}>KES {formatCurrency(Math.abs(totals?.balance || 0))}</h3>
+                  <h3 className={`text-2xl text-${totals?.balance >= 0 ? "green" : "red"}-600 font-bold`}>{(totals?.balance || 0) >= 0 ? `KES ${formatCurrency(totals?.balance || 0)}` : `KES [-${formatCurrency(Math.abs(totals?.balance || 0))}]`}</h3>
                   <p className={`text-xs text-${totals?.balance >= 0 ? "green" : "red"}-600`}>Net balance</p>
                 </div>
                 <div className={`bg-${totals?.balance >= 0 ? "green" : "red"}-600 p-2 rounded-md`}>
@@ -171,23 +173,23 @@ export default function Report() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                <TableRow className="hover:bg-muted/30">
+                <TableRow className="hover:bg-muted/30 cursor-pointer" onClick={() => router.push('/sales')}>
                   <TableCell className="font-medium">Revenue</TableCell>
                   <TableCell className={`text-right ${getValueColor(incomeStatement?.revenue || 0)}`}>
-                    {formatCurrency(incomeStatement?.revenue || 0)}
+                    {(incomeStatement?.revenue || 0) >= 0 ? formatCurrency(incomeStatement?.revenue || 0) : `[-${formatCurrency(Math.abs(incomeStatement?.revenue || 0))}]`}
                   </TableCell>
                 </TableRow>
-                <TableRow className="hover:bg-muted/30">
+                <TableRow className="hover:bg-muted/30 cursor-pointer" onClick={() => router.push('/invoices')}>
                   <TableCell className="font-medium">Cost</TableCell>
                   <TableCell className="text-right">{formatCurrency(incomeStatement?.cost || 0)}</TableCell>
                 </TableRow>
                 <TableRow className="border-t-2 hover:bg-muted/30">
                   <TableCell className="font-medium">Gross Profit</TableCell>
                   <TableCell className={`text-right font-medium ${getValueColor(incomeStatement?.grossProfit || 0)}`}>
-                    {formatCurrency(incomeStatement?.grossProfit || 0)}
+                    {(incomeStatement?.grossProfit || 0) >= 0 ? formatCurrency(incomeStatement?.grossProfit || 0) : `[-${formatCurrency(Math.abs(incomeStatement?.grossProfit || 0))}]`}
                   </TableCell>
                 </TableRow>
-                <TableRow className="hover:bg-muted/30">
+                <TableRow className="hover:bg-muted/30 cursor-pointer" onClick={() => router.push('/expenses')}>
                   <TableCell className="font-medium">Expenses</TableCell>
                   <TableCell className="text-right">{formatCurrency(incomeStatement?.expenses || 0)}</TableCell>
                 </TableRow>
@@ -196,7 +198,7 @@ export default function Report() {
                   <TableCell
                     className={`text-right text-base font-semibold ${getValueColor(incomeStatement?.netProfit || 0)}`}
                   >
-                    {formatCurrency(incomeStatement?.netProfit || 0)}
+                    {(incomeStatement?.netProfit || 0) >= 0 ? formatCurrency(incomeStatement?.netProfit || 0) : `[-${formatCurrency(Math.abs(incomeStatement?.netProfit || 0))}]`}
                   </TableCell>
                 </TableRow>
               </TableBody>

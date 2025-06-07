@@ -134,7 +134,15 @@ async function getAllTransactions(db, projectId) {
       limit: 100000
     });
 
-    return { success: true, transactions: result.docs };
+    // Sort transactions from latest to oldest based on createdAt timestamp
+    const sortedTransactions = result.docs.sort((a, b) => {
+      // Use createdAt as primary sort field
+      const dateA = new Date(a.createdAt || a.date || 0);
+      const dateB = new Date(b.createdAt || b.date || 0);
+      return dateB - dateA; // Descending order (latest first)
+    });
+
+    return { success: true, transactions: sortedTransactions };
   } catch (error) {
     return { success: false, error: error.message };
   }

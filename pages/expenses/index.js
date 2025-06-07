@@ -27,7 +27,8 @@ export default function Expenses() {
     accountName: ''
   })
   const [selectedExpense, setSelectedExpense] = useState(null)
-  const [isSheetOpen, setIsSheetOpen] = useState(false)
+  const [isDetailSheetOpen, setIsDetailSheetOpen] = useState(false) // Renamed for clarity
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false) // New state for filter sheet
   const [confirmDialog, setConfirmDialog] = useState({
     isOpen: false,
     itemToDelete: null
@@ -187,7 +188,7 @@ export default function Expenses() {
       
       if (response.success) {
         setExpenses(response.expenses);
-        setIsSheetOpen(false);
+        setIsFilterSheetOpen(false); // Close filter sheet after applying
       } else {
         setError(response.error || 'Failed to filter expenses');
       }
@@ -223,8 +224,9 @@ export default function Expenses() {
   };
 
   const handleView = (expense) => {
+    setIsFilterSheetOpen(false) // Ensure filter sheet is closed
     setSelectedExpense(expense)
-    setIsSheetOpen(true)
+    setIsDetailSheetOpen(true)
   }
 
   const handleDelete = (expense) => {
@@ -264,15 +266,14 @@ export default function Expenses() {
               placeholder="Search expenses"
               onChange={(e) => performSearch(e.target.value)}
             />
-            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <FilterIcon className="h-4 w-4" />
-                </Button>
-              </SheetTrigger>
+            <Button variant="outline" size="sm" className="ml-auto h-8 lg:flex" onClick={() => setIsFilterSheetOpen(true)}>
+              <FilterIcon className="mr-2 h-4 w-4" />
+              Filter
+            </Button>
+            <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
               <SheetContent>
                 <SheetHeader>
-                  <SheetTitle>Filter Expenses</SheetTitle>
+                  <SheetTitle>Filters</SheetTitle>
                 </SheetHeader>
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
@@ -336,9 +337,7 @@ export default function Expenses() {
                     <Button variant="outline" onClick={clearFilters}>
                       Clear
                     </Button>
-                    <Button onClick={applyFilters}>
-                      Apply Filters
-                    </Button>
+                    <Button onClick={applyFilters} className="w-full">Apply Filters</Button>
                   </div>
                 </div>
               </SheetContent>
@@ -363,9 +362,9 @@ export default function Expenses() {
       {selectedExpense && (
         <ExpenseDetails
           expense={selectedExpense}
-          isOpen={isSheetOpen}
+          isOpen={isDetailSheetOpen} // Use dedicated state for details sheet
           onClose={() => {
-            setIsSheetOpen(false)
+            setIsDetailSheetOpen(false)
             setSelectedExpense(null)
           }}
         />

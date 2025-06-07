@@ -31,7 +31,8 @@ export default function NewInvoice() {
     date: '',
     description: '',
     currency: 'KES',
-    rate: '1'
+    rate: '1',
+    pdfBase64: ''
   })
   const [suppliers, setSuppliers] = useState([])
   const [projectId, setProjectId] = useState('')
@@ -79,6 +80,30 @@ export default function NewInvoice() {
     }
   }
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0]
+    if (file && file.type === "application/pdf") {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setFormData(prev => ({
+          ...prev,
+          pdfBase64: reader.result
+        }))
+      }
+      reader.readAsDataURL(file)
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        pdfBase64: ''
+      }))
+      toast({
+        title: "Invalid File Type",
+        description: "Please select a PDF file.",
+        variant: "destructive",
+      })
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     
@@ -97,7 +122,8 @@ export default function NewInvoice() {
         date: formData.date,
         description: formData.description,
         currency: formData.currency,
-        rate: parseFloat(formData.rate)
+        rate: parseFloat(formData.rate),
+        pdfBase64: formData.pdfBase64
       }
       
       console.log('payload:', payload)
@@ -303,6 +329,17 @@ export default function NewInvoice() {
               value={formData.description}
               onChange={handleChange}
               placeholder="Enter description"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="pdfFile">Invoice PDF (Optional)</Label>
+            <Input
+              id="pdfFile"
+              name="pdfFile"
+              type="file"
+              accept=".pdf"
+              onChange={handleFileChange}
             />
           </div>
 

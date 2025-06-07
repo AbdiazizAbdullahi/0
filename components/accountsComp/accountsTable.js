@@ -109,7 +109,7 @@ export default function AccountsTable() {
               {currentAccounts.map((a) => (
                 <TableRow key={a._id} className="text-base">
                   <TableCell className="text-left font-medium">{a.name}</TableCell>
-                  <TableCell className={`hidden md:table-cell text-left ${a.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>{a.currency} {formatCurrency(Math.abs(a.balance))}</TableCell>
+                  <TableCell className={`hidden md:table-cell text-left ${a.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>{a.balance >= 0 ? `${a.currency} ${formatCurrency(a.balance)}` : `${a.currency} [-${formatCurrency(Math.abs(a.balance))}]`}</TableCell>
                   <TableCell className="text-right space-x-2">
                     <Button onClick={() => router.push(`/accounts/${a._id}`)} size="sm" variant="secondary">View</Button>
                     <DeleteAccount accountId={a._id} accountName={a.name} fetchAccounts={fetchAccounts} />

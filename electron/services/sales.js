@@ -64,9 +64,17 @@ async function getAllSales(db, projectId) {
       }
     });
 
+    // Sort sales from latest to oldest based on createdAt timestamp
+    const sortedSales = result.docs.sort((a, b) => {
+      // Use createdAt as primary sort field, fall back to date if createdAt isn't available
+      const dateA = new Date(a.createdAt || a.date || 0);
+      const dateB = new Date(b.createdAt || b.date || 0);
+      return dateB - dateA; // Descending order (latest first)
+    });
+
     return { 
       success: true, 
-      sales: result.docs 
+      sales: sortedSales 
     };
   } catch (error) {
     console.error('Fetching sales failed:', error);

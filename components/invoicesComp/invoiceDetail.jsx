@@ -7,6 +7,34 @@ import { Separator } from "../ui/separator"
 import { Badge } from "../ui/badge"
 
 export default function InvoiceDetails({ invoice, isOpen, onClose }) {
+  const handleDownloadPdf = () => {
+    if (invoice && invoice.pdfBase64) {
+      try {
+        // Extract the actual base64 data part
+        const base64Data = invoice.pdfBase64.split(';base64,').pop();
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `invoice-${invoice.invoiceNumber || 'details'}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href); // Clean up
+      } catch (error) {
+        console.error("Error downloading PDF:", error);
+        // Optionally, show a toast or alert to the user
+        alert("Failed to download PDF. The file may be corrupted or an error occurred.");
+      }
+    }
+  };
+
 return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto">
@@ -66,16 +94,18 @@ return (
           </div>
 
           {/* Action buttons */}
-          {/* <div className="flex space-x-2 pt-4">
-            <Button className="flex-1" variant="outline">
-              <Printer className="mr-2 h-4 w-4" />
-              Print
-            </Button>
-            <Button className="flex-1">
-              <Download className="mr-2 h-4 w-4" />
-              Download
-            </Button>
-          </div> */}
+          {(invoice && invoice.pdfBase64 && invoice.pdfBase64.startsWith('data:application/pdf;base64,')) && (
+            <div className="flex space-x-2 pt-4">
+              {/* <Button className="flex-1" variant="outline">
+                <Printer className="mr-2 h-4 w-4" />
+                Print
+              </Button> */}
+              <Button className="flex-1" onClick={handleDownloadPdf}>
+                <Download className="mr-2 h-4 w-4" />
+                Download PDF
+              </Button>
+            </div>
+          )}
         </div>
       </SheetContent>
     </Sheet>

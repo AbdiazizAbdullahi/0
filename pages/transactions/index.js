@@ -3,7 +3,7 @@ import useProjectStore from '@/stores/projectStore'
 import ReusableTable from '@/components/commonComp/reusableTable'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { EllipsisVertical, Loader2, FilterIcon } from 'lucide-react'
+import { EllipsisVertical, Loader2, FilterIcon, DollarSign, CreditCard } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
@@ -13,6 +13,28 @@ import { Label } from '@/components/ui/label'
 import TransactionDetails from '@/components/transactionsComp/transactionDetail'
 import ConfirmDialog from '@/components/commonComp/confirmDialog'
 import { formatPesa } from '@/lib/utils'
+import { Skeleton } from '@/components/ui/skeleton'
+
+// Financial Card Component (similar to suppliers page)
+function FinancialCard({ title, amount, icon, loading, amountColorClass, borderColorClass }) {
+  return (
+    <Card className={`${borderColorClass} border-l-4 shadow-md hover:shadow-lg transition-shadow duration-300`}>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium text-gray-600">{title}</CardTitle>
+        {icon}
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <Skeleton className="h-8 w-3/4" />
+        ) : (
+          <div className={`text-2xl font-bold ${amountColorClass}`}>
+            {amount !== undefined && amount !== null ? formatPesa(amount) : "N/A"}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function Transactions() {
   const [transactions, setTransactions] = useState([])
@@ -34,6 +56,8 @@ export default function Transactions() {
     amountRange: [, ],
     currency: ''
   })
+  const [totalCredit, setTotalCredit] = useState(0)
+  const [totalDebit, setTotalDebit] = useState(0)
 
   const TRANSACTION_TYPES = [
     { id: 'deposit', label: 'Deposit' },
@@ -63,6 +87,23 @@ export default function Transactions() {
       fetchAccounts()
     }
   }, [id])
+
+  useEffect(() => {
+    let currentTotalCredit = 0;
+    let currentTotalDebit = 0;
+
+    transactions.forEach(transaction => {
+      const amount = parseFloat(transaction.amount) || 0;
+      if (transaction.transType?.toLowerCase() === 'deposit') {
+        currentTotalCredit += amount;
+      } else if (transaction.transType?.toLowerCase() === 'withdraw' || transaction.transType?.toLowerCase() === 'withdrawal') {
+        currentTotalDebit += amount;
+      }
+    });
+
+    setTotalCredit(currentTotalCredit);
+    setTotalDebit(currentTotalDebit);
+  }, [transactions]);
 
   const headers = [
     { 
@@ -246,6 +287,27 @@ export default function Transactions() {
   return (
     <>
       <Card className="">
+
+        {/* Financial Summary Cards */}
+        <div className="mb-6 grid grid-cols-1 gap-6 sm:grid-cols-2 p-4">
+          <FinancialCard
+            title="Total Credits (Deposits)"
+            amount={totalCredit}
+            icon={<DollarSign className="h-6 w-6 text-green-500" />}
+            loading={loading}
+            amountColorClass="text-green-600"
+            borderColorClass="border-green-500"
+          />
+          <FinancialCard
+            title="Total Debits (Withdrawals)"
+            amount={totalDebit}
+            icon={<CreditCard className="h-6 w-6 text-red-500" />}
+            loading={loading}
+            amountColorClass="text-red-600"
+            borderColorClass="border-red-500"
+          />
+        </div>
+
         <CardHeader className="flex flex-row justify-between items-center">
           <div>
             <CardTitle>Transactions</CardTitle>

@@ -15,6 +15,7 @@ function createInvoice(db, invoiceData) {
     price: invoiceData.price || '',
     currency: invoiceData.currency || 'KES',
     rate: invoiceData.rate || 1,
+    pdfBase64: invoiceData.pdfBase64 || '',
     createdAt: new Date().toISOString(),
     type: "invoice",
     state: "Active",
@@ -57,7 +58,16 @@ function getAllInvoices(db, projectId) {
       },
       limit: 100000
     })
-    .then((result) => ({ success: true, invoices: result.docs }))
+    .then((result) => {
+      // Sort invoices from latest to oldest based on createdAt timestamp
+      const sortedInvoices = result.docs.sort((a, b) => {
+        // Use createdAt as primary sort field, fall back to date if createdAt isn't available
+        const dateA = new Date(a.createdAt || a.date || 0);
+        const dateB = new Date(b.createdAt || b.date || 0);
+        return dateB - dateA; // Descending order (latest first)
+      });
+      return { success: true, invoices: sortedInvoices };
+    })
     .catch((error) => ({ success: false, error: error.message }));
 }
 

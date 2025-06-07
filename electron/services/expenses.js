@@ -13,6 +13,7 @@ function createExpense(db, expenseData) {
     expenseType: expenseData.expenseType,
     currency: expenseData.currency,
     rate: expenseData.rate || 1,
+    pdfBase64: expenseData.pdfBase64 || '', // Added pdfBase64 field
     projectId: expenseData.projectId,
     createdAt: new Date().toISOString(),
     type: "expense",
@@ -68,7 +69,16 @@ function getAllExpenses(db, projectId) {
       },
       limit: 100000
     })
-    .then((result) => ({ success: true, expenses: result.docs }))
+    .then((result) => {
+      // Sort expenses from latest to oldest based on createdAt timestamp
+      const sortedExpenses = result.docs.sort((a, b) => {
+        // Use createdAt as primary sort field, fall back to date if createdAt isn't available
+        const dateA = new Date(a.createdAt || a.date || 0);
+        const dateB = new Date(b.createdAt || b.date || 0);
+        return dateB - dateA; // Descending order (latest first)
+      });
+      return { success: true, expenses: sortedExpenses };
+    })
     .catch((error) => ({ success: false, error: error.message }));
 }
 

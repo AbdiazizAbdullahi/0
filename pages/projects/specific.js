@@ -107,7 +107,7 @@ export default function SpecificProject() {
                       <span className="text-sm text-muted-foreground">Balance</span>
                       <div className={`flex items-center font-medium ${balanceColor}`}>
                         <span className="text-xl font-bold">
-                          {account.currency} {formatCurrency(Math.abs(account.balance))}
+                          {account.balance >= 0 ? `${account.currency} ${formatCurrency(account.balance)}` : `${account.currency} [-${formatCurrency(Math.abs(account.balance))}]`}
                         </span>
                       </div>
                     </div>

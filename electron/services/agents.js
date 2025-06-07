@@ -231,6 +231,15 @@ async function getAgentDetails(db, agentId) {
     let balance = 0;
     let totalDebit = 0;
     let totalCredit = 0;
+    let totalCommissions = 0;
+
+    // Calculate total commissions directly from sales results
+    console.log(`Calculating totalCommissions for agentId: ${agentId}`); // Log agentId
+    salesResult.docs.forEach(sale => {
+      const commissionAmount = sale.commission || 0;
+      const commissionInKES = sale.currency === 'USD' && sale.rate ? Number(commissionAmount) * sale.rate : Number(commissionAmount);
+      totalCommissions += commissionInKES;
+    });
 
     const ledgerWithBalance = ledgerEntries.map(entry => {
       const debitInKES = entry.currency === 'USD' ? Number(entry.debit) * entry.rate : Number(entry.debit);
@@ -253,6 +262,7 @@ async function getAgentDetails(db, agentId) {
         metrics: {
           totalDebit,
           totalCredit,
+          totalCommissions,
           difference: totalDebit - totalCredit
         },
         ledger: ledgerWithBalance

@@ -177,7 +177,7 @@ export default function AgentDetail() {
 
       <section>
         <h2 className="text-2xl font-bold mb-4 text-primary">Financial Summary</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <FinancialCard
             title="Total Debit"
             amount={data?.metrics.totalDebit}
@@ -189,6 +189,13 @@ export default function AgentDetail() {
             title="Total Credit"
             amount={data?.metrics.totalCredit}
             icon={<DollarSign className="h-6 w-6 text-blue-500" />}
+            loading={loading}
+            color="blue"
+          />
+          <FinancialCard
+            title="Total Commissions"
+            amount={data?.metrics.totalCommissions}
+            icon={<CreditCard className="h-6 w-6 text-blue-500" />}
             loading={loading}
             color="blue"
           />

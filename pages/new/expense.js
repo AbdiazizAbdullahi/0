@@ -44,6 +44,7 @@ export default function NewExpense() {
     expenseType: "",
     currency: "KES",
     rate: "1", // Add rate with default value
+    pdfBase64: "" // Added for PDF base64 string
   })
   const [accounts, setAccounts] = useState([])
   const [projectId, setProjectId] = useState("")
@@ -91,6 +92,31 @@ export default function NewExpense() {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0]
+    if (file && file.type === "application/pdf") {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setFormData(prev => ({
+          ...prev,
+          pdfBase64: reader.result // Store base64 string
+        }))
+      }
+      reader.readAsDataURL(file)
+    } else {
+      // Handle error or clear if not a PDF
+      setFormData(prev => ({
+        ...prev,
+        pdfBase64: ''
+      }))
+      toast({
+        title: "Invalid File Type",
+        description: "Please select a PDF file.",
+        variant: "destructive",
+      })
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (isSubmitting) return
@@ -105,6 +131,7 @@ export default function NewExpense() {
         expenseType: formData.expenseType,
         currency: formData.currency,
         rate: Number.parseFloat(formData.rate), // Add rate to payload
+        pdfBase64: formData.pdfBase64, // Added PDF base64 string to payload
         projectId: projectId,
       }
       const response = await window.electronAPI.mainOperation("createExpense", payload)
@@ -314,6 +341,16 @@ export default function NewExpense() {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="pdfFile">Expense PDF (Optional)</Label>
+            <Input
+              id="pdfFile"
+              name="pdfFile"
+              type="file"
+              accept=".pdf"
+              onChange={handleFileChange}
+            />
           </div>
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? "Creating..." : "Create Expense"}
