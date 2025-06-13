@@ -30,10 +30,22 @@ async function generateIncomeStatement(db, projectId) {
       limit: 100000
     });
 
+    // Fetch all customer transactions (payments received)
+    const customerTransactionsResult = await db.find({
+      selector: {
+        type: 'transaction',
+        state: 'Active',
+        source: 'client', // Assuming 'customer' is the type for customer payments
+        projectId: projectId
+      },
+      limit: 100000
+    });
+
     // Calculate totals
     let totalDebit = 0;
     let cost = 0;
     let totalExpenses = 0;
+    let totalAmountPaid = 0;
 
     // Add sales revenue to total debit
     salesResult.docs.forEach(sale => {
@@ -52,6 +64,16 @@ async function generateIncomeStatement(db, projectId) {
     expensesResult.docs.forEach(expense => {
       const amount = expense.currency === 'USD' ? Number(expense.amount) * Number(expense.rate) : Number(expense.amount);
       totalExpenses += amount || 0;
+    });
+
+    // Calculate total amount paid from customer transactions
+    customerTransactionsResult.docs.forEach(transaction => {
+      // Assuming 'deposit' transactions from customers are payments
+      // And that 'amount' needs conversion similar to sales/expenses if in USD
+      if (transaction.transType === 'deposit') { // Or whatever signifies a payment received
+        const amount = transaction.currency === 'USD' ? Number(transaction.amount) * Number(transaction.rate) : Number(transaction.amount);
+        totalAmountPaid += amount || 0;
+      }
     });
 
     const totalCredit = cost + totalExpenses;
@@ -75,7 +97,8 @@ async function generateIncomeStatement(db, projectId) {
         totalCredit,
         balance
       },
-      incomeStatement
+      incomeStatement,
+      totalAmountPaid // Add totalAmountPaid here
     };
   } catch (error) {
     console.error('Income statement generation failed:', error);

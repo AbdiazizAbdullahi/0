@@ -195,9 +195,9 @@ export default function AgentDetail() {
           <FinancialCard
             title="Total Commissions"
             amount={data?.metrics.totalCommissions}
-            icon={<CreditCard className="h-6 w-6 text-blue-500" />}
+            icon={<CreditCard className="h-6 w-6 text-purple-500" />}
             loading={loading}
-            color="blue"
+            color="purple"
           />
           <FinancialCard
             title="Balance"

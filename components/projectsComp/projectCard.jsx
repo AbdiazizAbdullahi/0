@@ -5,6 +5,11 @@ import { Edit, Trash2, MapPin, Home, Calendar, Eye } from "lucide-react"
 import Image from "next/image"
 import { useRouter } from 'next/navigation'
 import useProjectStore from "@/stores/projectStore"
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
+import useLoginStore from '@/stores/loginStore';
 
 const STATUS_COLORS = {
   planning: "bg-blue-100 text-blue-700",
@@ -15,7 +20,10 @@ const STATUS_COLORS = {
 
 export default function ProjectCard({ project, onEdit, onDelete }) {
   const router = useRouter();
-  const { addProject } = useProjectStore()
+  const { addProject } = useProjectStore();
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+  const [password, setPassword] = useState('');
+  const { user } = useLoginStore();
 
   const truncateText = (text, maxLength = 50) => {
     if (!text) return ""
@@ -23,11 +31,30 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
   }
 
   const handleViewProject = () => {
-    addProject(project);
-    router.replace("/projects/specific");
+    setIsPasswordDialogOpen(true);
   }
 
+  const handlePasswordSubmit = async () => {
+    if (!password) {
+      toast.error('Password is required');
+      return;
+    }
+
+    try {
+      const response = await window.electronAPI.login(user.phoneNumber, password);
+      if (response.success) {
+        addProject(project);
+        router.replace("/projects/specific");
+      } else {
+        toast.error(response.error || 'Invalid password');
+      }
+    } catch (error) {
+      toast.error('An error occurred. Please try again.');
+    }
+  };
+
   return (
+    <>
     <Card className="overflow-hidden group hover:shadow-xl transition-all duration-300 bg-white border border-gray-200 cursor-pointer" onClick={handleViewProject}>
       <div className="relative h-48 overflow-hidden">
         {project.representativeImage ? (
@@ -90,5 +117,25 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
         </Button>
       </CardFooter>
     </Card>
+    <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Enter Password</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <Input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsPasswordDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handlePasswordSubmit}>Submit</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      </>
   )
 }

@@ -30,7 +30,8 @@ export default function NewSale() {
     commission: 0,
     projectId: '',
     currency: 'KES',
-    rate: '1'
+    rate: '1',
+    pdfBase64: ''
   })
   const [clients, setClients] = useState([])
   const [agents, setAgents] = useState([])
@@ -67,6 +68,30 @@ export default function NewSale() {
       ...prev,
       [name]: value
     }))
+  }
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0]
+    if (file && file.type === "application/pdf") {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setFormData(prev => ({
+          ...prev,
+          pdfBase64: reader.result
+        }))
+      }
+      reader.readAsDataURL(file)
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        pdfBase64: ''
+      }))
+      toast({
+        title: "Invalid File Type",
+        description: "Please select a PDF file.",
+        variant: "destructive",
+      })
+    }
   }
 
   const handleSubmit = async (e) => {
@@ -314,6 +339,18 @@ export default function NewSale() {
                 step="0.01"
               />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="pdf">Attach PDF (Optional)</Label>
+            <Input
+              id="pdf"
+              name="pdf"
+              type="file"
+              accept="application/pdf"
+              onChange={handleFileChange}
+              className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+            />
           </div>
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>

@@ -77,8 +77,8 @@
   },
   "build": {
     "appId": "com.example.project-y",
-    "productName": "System",
-    "copyright": "system",
+    "productName": "SD",
+    "copyright": "sharif developers",
     "files": [
       "electron/**/*",
       "out/**/*",
@@ -113,8 +113,8 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "SYSTEM",
-      "uninstallDisplayName": "Uninstall SYSTEM",
+      "shortcutName": "SD",
+      "uninstallDisplayName": "Uninstall SD",
       "artifactName": "${productName}-Setup-${version}.${ext}",
       "deleteAppDataOnUninstall": true
     }

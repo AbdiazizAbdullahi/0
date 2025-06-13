@@ -24,6 +24,7 @@ export default function Report() {
     totalCredit: 0,
     balance: 0
   });
+  const [totalAmountPaid, setTotalAmountPaid] = useState(0);
 
   useEffect(() => {
     if (project?._id) {
@@ -49,6 +50,7 @@ export default function Report() {
       if (result.success) {
         setIncomeStatement(result.incomeStatement);
         setTotals(result.totals);
+        setTotalAmountPaid(result.totalAmountPaid || 0);
       } else {
         throw new Error(result.error);
       }
@@ -73,7 +75,7 @@ export default function Report() {
       <div className="w-full p-6 bg-white rounded-lg border border-gray-100">
         <h2 className="text-xl font-bold mb-4">Income Statement Overview</h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Total Debit Card */}
           <Card className="bg-blue-100 border-0 overflow-hidden">
             <CardContent className="p-6">
@@ -90,19 +92,35 @@ export default function Report() {
             </CardContent>
           </Card>
 
-          {/* Total Credit Card */}
-          <Card className="bg-emerald-100 border-0 overflow-hidden">
+          {/* Total Amount Paid Card */}
+          <Card className="bg-yellow-100 border-0 overflow-hidden">
             <CardContent className="p-6">
               <div className="flex justify-between items-start">
                 <div className="space-y-1">
-                  <p className="text-sm text-emerald-700">Total Credit</p>
-                  <h3 className="text-2xl font-bold text-emerald-900">
+                  <p className="text-sm text-yellow-700">Total Paid</p>
+                  <h3 className="text-2xl font-bold text-yellow-900">KES {formatCurrency(totalAmountPaid || 0)}</h3>
+                  <p className="text-xs text-yellow-700">From customers</p>
+                </div>
+                <div className="bg-yellow-200 p-2 rounded-md">
+                  <DollarSign className="h-5 w-5 text-yellow-700" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Total Credit Card */}
+          <Card className="bg-purple-100 border-0 overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex justify-between items-start">
+                <div className="space-y-1">
+                  <p className="text-sm text-purple-700">Total Credit</p>
+                  <h3 className="text-2xl font-bold text-purple-900">
                     KES {formatCurrency(totals?.totalCredit || 0)}
                   </h3>
-                  <p className="text-xs text-emerald-700">Outgoing funds</p>
+                  <p className="text-xs text-purple-700">Outgoing funds</p>
                 </div>
-                <div className="bg-emerald-200 p-2 rounded-md">
-                  <CreditCard className="h-5 w-5 text-emerald-700" />
+                <div className="bg-purple-200 p-2 rounded-md">
+                  <CreditCard className="h-5 w-5 text-purple-700" />
                 </div>
               </div>
             </CardContent>

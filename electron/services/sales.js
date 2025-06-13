@@ -36,6 +36,7 @@ async function createSale(db, saleData) {
       originalPrice: saleData.price,
       originalCurrency: saleData.currency,
       conversionRate: saleData.rate,
+      pdfBase64: saleData.pdfBase64 || '',
       ...saleData,
     };
 

@@ -2,8 +2,36 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Label } from "../ui/label"
 import { formatCurrency } from "@/lib/utils"
 import { Separator } from "../ui/separator"
+import { Button } from "@/components/ui/button"
+import { Download } from "lucide-react"
 
 export default function SaleDetails({ sale, isOpen, onClose }) {
+  const handleDownloadPdf = () => {
+    if (sale && sale.pdfBase64) {
+      try {
+        const base64Data = sale.pdfBase64.split(';base64,').pop();
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `sale-${sale.clientName}-${sale.houseNo}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+      } catch (error) {
+        console.error("Error downloading PDF:", error);
+        alert("Failed to download PDF. The file may be corrupted or an error occurred.");
+      }
+    }
+  };
+
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto">
@@ -56,6 +84,16 @@ export default function SaleDetails({ sale, isOpen, onClose }) {
               </div>
             </div>
           </div>
+
+          {/* Action buttons */}
+          {(sale && sale.pdfBase64 && sale.pdfBase64.startsWith('data:application/pdf;base64,')) && (
+            <div className="flex space-x-2 pt-4">
+              <Button className="flex-1" onClick={handleDownloadPdf}>
+                <Download className="mr-2 h-4 w-4" />
+                Download PDF
+              </Button>
+            </div>
+          )}
         </div>
       </SheetContent>
     </Sheet>
